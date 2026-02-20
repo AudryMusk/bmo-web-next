@@ -69,13 +69,3 @@ PUBLIC (non authentifié)
 - **Stats** — le dashboard a besoin de deux endpoints :
   - `/stats` → compteurs globaux (total articles, publiés aujourd'hui, nb catégories)
 
----
-
-## À faire côté frontend (quand backend prêt)
-
-- [ ] Remplacer `mock.js` par des appels API dans chaque page
-- [ ] Uploader la bannière avant soumission, inclure l'URL dans le payload
-- [ ] Gérer refresh token (intercepteur axios sur 401)
-- [ ] Implémenter les pages Services, Tarifs, Réseau dans le CMS
-- [ ] Supprimer debug code dans `Dashboard.jsx` (lignes 91-93)
-- [ ] Implémenter les pages Analytics et Paramètres
