@@ -10,12 +10,10 @@ export default function AppLayout() {
   return (
     <div className="flex min-h-screen bg-bg">
 
-      {/* Sidebar desktop */}
       <div className="hidden md:flex sticky top-0 h-screen shrink-0">
         <Sidebar />
       </div>
 
-      {/* Sidebar mobile — Sheet */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="p-0 w-64">
           <Sidebar onNavigate={() => setMobileOpen(false)} />

@@ -88,10 +88,6 @@ export default function Dashboard({ articles }) {
   })
   const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1)
   const recentArticles = articles.slice(0, 4)
-  const xss = useAuthStore.getState().token
-
-  console.log(xss)
-
   return (
     <div className="flex flex-col gap-6">
 
