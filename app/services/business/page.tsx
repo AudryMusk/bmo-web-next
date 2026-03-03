@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { servicesBusiness } from "@/data/bmo-data";
+import { getServicesBusiness } from "@/lib/db";
 import {
   Users,
   Wallet,
@@ -23,7 +23,10 @@ const iconMap = {
   Calendar,
 };
 
-export default function ServicesBusiness() {
+export const revalidate = 60
+
+export default async function ServicesBusiness() {
+  const servicesBusiness = await getServicesBusiness()
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

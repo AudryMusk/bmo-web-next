@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  articles  Article[]
+}
+
+// ─── Blog ────────────────────────────────────────────────────────────────────
+
+enum ArticleStatus {
+  brouillon
+  publie
+  planifie
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  color       String    @default("#2563EB")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  articles    Article[]
+}
+
+model Article {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  excerpt         String?       @db.Text
+  status          ArticleStatus @default(brouillon)
+  author          String
+  authorAvatar    String?
+  date            DateTime      @default(now())
+  readTime        Int           @default(1)
+  image           String?
+  content         Json
+  metaTitle       String?
+  metaDescription String?       @db.Text
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// ─── Services ────────────────────────────────────────────────────────────────
+
+enum ServiceType {
+  particulier
+  business
+}
+
+model Service {
+  id              String      @id @default(cuid())
+  serviceId       String      @unique
+  type            ServiceType
+  title           String
+  icon            String
+  description     String      @db.Text
+  features        Json?
+  ussdSteps       Json?
+  appSteps        Json?
+  characteristics Json?
+  advantages      Json?
+  useCases        Json?
+  steps           Json?
+  linkingMethods  Json?
+  model           String?
+  order           Int         @default(0)
+}
+
+// ─── Tariffs ─────────────────────────────────────────────────────────────────
+
+model TariffMeta {
+  id          String      @id @default(cuid())
+  region      String      @unique
+  title       String
+  description String      @db.Text
+  note        String?     @db.Text
+  rows        TariffRow[]
+}
+
+model TariffRow {
+  id                 String     @id @default(cuid())
+  min                Float
+  max                Float?
+  fraisRetrait       Float?
+  fraisEnvoi         Float?
+  minEnvoi           Float?
+  maxEnvoi           Float?
+  frais              Float?
+  fraisBmoVersAutres Float?
+  fraisAutresVersBmo String?
+  order              Int        @default(0)
+  tariffMetaId       String
+  tariffMeta         TariffMeta @relation(fields: [tariffMetaId], references: [id], onDelete: Cascade)
+}
+
+// ─── Network ─────────────────────────────────────────────────────────────────
+
+model Microfinance {
+  id       String @id @default(cuid())
+  name     String @unique
+  agencies Int
+  order    Int    @default(0)
+}
+
+model Distributor {
+  id       String @id @default(cuid())
+  name     String
+  location String @db.Text
+  phone    String
+  order    Int    @default(0)
+}
+
+model GabAtm {
+  id       String @id @default(cuid())
+  city     String
+  location String
+  order    Int    @default(0)
+}
+
+model Partner {
+  id          String @id @default(cuid())
+  name        String @unique
+  category    String
+  description String @db.Text
+  order       Int    @default(0)
+}

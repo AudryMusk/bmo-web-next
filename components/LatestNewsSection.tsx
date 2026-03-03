@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { blogPosts } from "@/data/bmo-data";
 
-const LatestNewsSection = () => {
+type BlogPost = { id: string; slug: string; title: string; excerpt: string; category: string; date: string; readTime: string }
+
+const LatestNewsSection = ({ posts }: { posts: BlogPost[] }) => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -27,7 +28,7 @@ const LatestNewsSection = () => {
     return () => observer.disconnect();
   }, []);
 
-  const latestPosts = blogPosts.slice(0, 3);
+  const latestPosts = posts.slice(0, 3);
 
   return (
     <section

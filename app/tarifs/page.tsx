@@ -1,12 +1,12 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
-  tarifsUEMOA,
-  tarifsSenegal,
-  tarifsCEMAC,
-  tarifsMobileMoney,
-  tarifsInternational,
-} from "@/data/bmo-data";
+  getTarifsUEMOA,
+  getTarifsSenegal,
+  getTarifsCEMAC,
+  getTarifsMobileMoney,
+  getTarifsInternational,
+} from "@/lib/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -18,11 +18,21 @@ import {
 } from "@/components/ui/table";
 import { Globe, ArrowLeftRight, Smartphone, MapPin, Info } from "lucide-react";
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number | null) => {
+  if (amount == null) return "—";
   return new Intl.NumberFormat("fr-FR").format(amount) + " F";
 };
 
-export default function Tarifs() {
+export const revalidate = 60
+
+export default async function Tarifs() {
+  const [tarifsUEMOA, tarifsSenegal, tarifsCEMAC, tarifsMobileMoney, tarifsInternational] = await Promise.all([
+    getTarifsUEMOA(),
+    getTarifsSenegal(),
+    getTarifsCEMAC(),
+    getTarifsMobileMoney(),
+    getTarifsInternational(),
+  ])
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

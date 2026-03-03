@@ -1,12 +1,12 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
-  microfinances,
-  distributeurs,
-  gabUBA,
-  partenaires,
-  stats,
-} from "@/data/bmo-data";
+  getMicrofinances,
+  getDistributeurs,
+  getGabUBA,
+  getPartenaires,
+  getNetworkStats,
+} from "@/lib/db";
 import {
   Building2,
   MapPin,
@@ -17,9 +17,18 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function Reseau() {
-  const totalAgencies = microfinances.reduce((sum, mf) => sum + mf.agencies, 0);
-  const totalGAB = Object.values(gabUBA).flat().length;
+export const revalidate = 60
+
+export default async function Reseau() {
+  const [microfinances, distributeurs, gabUBA, partenaires, stats] = await Promise.all([
+    getMicrofinances(),
+    getDistributeurs(),
+    getGabUBA(),
+    getPartenaires(),
+    getNetworkStats(),
+  ])
+  const totalAgencies = stats.agencies
+  const totalGAB = stats.gabCount
 
   return (
     <div className="min-h-screen bg-background">
@@ -188,9 +197,7 @@ export default function Reseau() {
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Object.entries(gabUBA).map(([city, atms], index) => {
-                    const cityName = city.replace(/([A-Z])/g, " $1").trim();
-                    const formattedCity =
-                      cityName.charAt(0).toUpperCase() + cityName.slice(1);
+                    const formattedCity = city;
 
                     return (
                       <div key={index} className="bg-muted/50 rounded-2xl p-6">

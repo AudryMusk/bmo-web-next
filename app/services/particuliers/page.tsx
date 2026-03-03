@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { servicesParticuliers } from "@/data/bmo-data";
+import { getServicesParticuliers } from "@/lib/db";
 import {
   ArrowLeftRight,
   Receipt,
@@ -23,7 +23,10 @@ const iconMap = {
   Globe,
 };
 
-export default function ServicesParticuliers() {
+export const revalidate = 60
+
+export default async function ServicesParticuliers() {
+  const servicesParticuliers = await getServicesParticuliers()
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -170,7 +173,7 @@ export default function ServicesParticuliers() {
                         <ol className="space-y-1">
                           {service.linkingMethods.automatic.steps
                             .slice(0, 4)
-                            .map((step, idx) => (
+                            .map((step: string, idx: number) => (
                               <li
                                 key={idx}
                                 className="text-xs text-muted-foreground flex items-start gap-2"

@@ -4,8 +4,8 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 const config: Config = {
   darkMode: ["class"],
   content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx,js,jsx}",
+    "./components/**/*.{ts,tsx,js,jsx}",
     "./data/**/*.{ts,tsx}",
     "./lib/**/*.{ts,tsx}",
   ],
@@ -27,7 +27,9 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "#B91C1C",
         },
+        tint: "#FFF1F2",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",

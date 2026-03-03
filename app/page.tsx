@@ -10,8 +10,13 @@ import LatestNewsSection from "@/components/LatestNewsSection";
 import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import { getBlogPosts } from "@/lib/db";
 
-export default function Index() {
+export const revalidate = 60
+
+export default async function Index() {
+  const posts = await getBlogPosts('publie')
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -22,7 +27,7 @@ export default function Index() {
       <CEOMessageSection />
       <PricingSection />
       <PartnersSection />
-      <LatestNewsSection />
+      <LatestNewsSection posts={posts} />
       <FAQSection />
       <ContactSection />
       <Footer />
