@@ -37,12 +37,13 @@ export async function deleteCategoryAction(formData) {
   const id = formData.get('id')
   if (!id) return
   try {
-    await prisma.article.deleteMany({ where: { categoryId: id } })
+    await prisma.article.deleteMany({ where:{ categoryId: id } })
     await prisma.category.delete({ where: { id } })
   } catch (e) {
     if (e?.code !== 'P2025') throw e
+    // Ca veut dire que la categorie n etait pas deja dans la database, on ignore l action
   }
-  revalidatePath('/admin/categories')
+  revalidatePath('/admin/categories') // Recharge la page des categories pour refleter les changements
   revalidatePath('/admin/articles')
   revalidatePath('/blog')
 }
