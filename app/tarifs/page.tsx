@@ -67,7 +67,7 @@ export default async function Tarifs() {
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
               >
                 <MapPin className="w-4 h-4 mr-2" />
-                UEMOA
+                B-MO
               </TabsTrigger>
               <TabsTrigger
                 value="mobile"
