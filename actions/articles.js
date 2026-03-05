@@ -119,8 +119,32 @@ export async function deleteArticleAction(formData) {
     await prisma.article.delete({ where: { id } })
   } catch (e) {
     if (e?.code !== 'P2025') throw e
-    // Record already deleted — ignore
   }
   revalidatePath('/admin/articles')
   revalidatePath('/blog')
 }
+
+export async function toggleArticleStatusAction(formData) {
+  const id     = formData.get('id')
+  const status = formData.get('status') // 'publie' | 'brouillon'
+  if (!id || !status) return
+  await prisma.article.update({ where: { id }, data: { status } })
+  revalidatePath('/admin/articles')
+  revalidatePath('/blog')
+}
+
+export async function bulkArticlesAction(formData) {
+  const ids    = JSON.parse(formData.get('ids') ?? '[]')
+  const action = formData.get('action') // 'publie' | 'brouillon' | 'delete'
+  if (!ids.length) return
+
+  if (action === 'delete') {
+    await prisma.article.deleteMany({ where: { id: { in: ids } } })
+  } else if (action === 'publie' || action === 'brouillon') {
+    await prisma.article.updateMany({ where: { id: { in: ids } }, data: { status: action } })
+  }
+
+  revalidatePath('/admin/articles')
+  revalidatePath('/blog')
+}
+

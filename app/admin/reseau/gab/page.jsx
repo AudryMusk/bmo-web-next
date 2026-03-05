@@ -29,6 +29,9 @@ export default async function GabPage() {
       createAction={createGabAction}
       updateAction={updateGabAction}
       deleteAction={deleteGabAction}
+      showGps
+      mapHref="/admin/reseau/gab/carte"
+      captureHrefBase="/admin/reseau/gab/capture"
     />
   )
 }

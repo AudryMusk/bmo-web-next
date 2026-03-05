@@ -14,9 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import SubmitButton from './SubmitButton'
 
-function ServiceRow({ service, updateAction }) {
+function ServiceRow({ service, updateAction, isOpen, onToggle }) {
   const [editing, setEditing] = useState(false)
-  const [open, setOpen]       = useState(false)
   const [state, formAction]   = useFormState(updateAction, null)
 
   useEffect(() => { if (state?.success) setEditing(false) }, [state])
@@ -97,15 +96,15 @@ function ServiceRow({ service, updateAction }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Badge variant="outline" className="text-[10px]">{features.length} fonctionnalité{features.length !== 1 ? 's' : ''}</Badge>
-          <button onClick={() => setOpen(o => !o)} className="h-7 w-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-50 cursor-pointer border-none bg-transparent transition-colors">
-            {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          <button onClick={onToggle} className="h-7 w-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-50 cursor-pointer border-none bg-transparent transition-colors">
+            {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
           <button onClick={() => setEditing(true)} className="h-7 w-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-50 cursor-pointer border-none bg-transparent transition-colors">
             <Pencil size={14} />
           </button>
         </div>
       </div>
-      {open && features.length > 0 && (
+      {isOpen && features.length > 0 && (
         <div className="px-4 pb-3 border-t border-slate-100">
           <ul className="mt-2 flex flex-wrap gap-1.5">
             {features.map((f, i) => (
@@ -119,6 +118,8 @@ function ServiceRow({ service, updateAction }) {
 }
 
 export default function ServicesManager({ services, updateAction, typeLabel }) {
+  const [openId, setOpenId] = useState(null) // un seul ouvert à la fois
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -127,7 +128,13 @@ export default function ServicesManager({ services, updateAction, typeLabel }) {
       </div>
       <div className="flex flex-col gap-3">
         {services.map(service => (
-          <ServiceRow key={service.id} service={service} updateAction={updateAction} />
+          <ServiceRow
+            key={service.id}
+            service={service}
+            updateAction={updateAction}
+            isOpen={openId === service.id}
+            onToggle={() => setOpenId(prev => prev === service.id ? null : service.id)}
+          />
         ))}
       </div>
     </div>

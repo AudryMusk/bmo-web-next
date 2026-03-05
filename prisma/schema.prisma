@@ -114,31 +114,38 @@ model TariffRow {
 // ─── Network ─────────────────────────────────────────────────────────────────
 
 model Microfinance {
-  id       String @id @default(cuid())
-  name     String @unique
+  id       String  @id @default(cuid())
+  name     String  @unique
   agencies Int
-  order    Int    @default(0)
+  logo     String?
+  order    Int     @default(0)
 }
 
 model Distributor {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   name     String
-  location String @db.Text
+  location String  @db.Text
   phone    String
-  order    Int    @default(0)
+  logo     String?
+  order    Int     @default(0)
 }
 
 model GabAtm {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   city     String
   location String
-  order    Int    @default(0)
+  lat      Float?
+  lng      Float?
+  address  String?   // reverse geocoding auto
+  logo     String?
+  order    Int     @default(0)
 }
 
 model Partner {
-  id          String @id @default(cuid())
-  name        String @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   category    String
-  description String @db.Text
-  order       Int    @default(0)
+  description String  @db.Text
+  logo        String?
+  order       Int     @default(0)
 }

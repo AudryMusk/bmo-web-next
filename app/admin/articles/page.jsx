@@ -1,5 +1,5 @@
 import { getArticles } from '@/lib/cms-data'
-import { deleteArticleAction } from '@/actions/articles'
+import { deleteArticleAction, toggleArticleStatusAction, bulkArticlesAction } from '@/actions/articles'
 import ArticlesTable from '@/components/admin/ArticlesTable'
 
 export const metadata = { title: 'Articles — CMS B-MO' }
@@ -11,6 +11,8 @@ export default async function ArticlesPage() {
     <ArticlesTable
       articles={articles}
       deleteArticleAction={deleteArticleAction}
+      toggleStatusAction={toggleArticleStatusAction}
+      bulkAction={bulkArticlesAction}
     />
   )
 }

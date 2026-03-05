@@ -1,15 +1,68 @@
 'use client'
 
 import { useFormState } from 'react-dom'
-import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, X, Check } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Plus, Pencil, Trash2, X, Check, ImageIcon, MapPin, Map } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import SubmitButton from './SubmitButton'
+
+function LogoUpload({ currentLogo }) {
+  const [preview, setPreview] = useState(currentLogo ?? null)
+  const inputRef = useRef(null)
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <label className="text-xs font-medium text-slate-600">Logo (optionnel)</label>
+      <div className="flex items-center gap-3">
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="w-14 h-14 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary bg-slate-50 hover:bg-primary/5 flex items-center justify-center cursor-pointer transition-colors overflow-hidden shrink-0"
+        >
+          {preview
+            ? <img src={preview} alt="logo" className="w-full h-full object-contain" />
+            : <ImageIcon size={20} className="text-slate-300" />
+          }
+        </div>
+        <div className="flex flex-col gap-1 min-w-0">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="text-xs font-medium text-primary hover:underline cursor-pointer bg-transparent border-none text-left"
+          >
+            {preview ? 'Changer le logo' : 'Importer un logo'}
+          </button>
+          {preview && (
+            <button
+              type="button"
+              onClick={() => { setPreview(null); if (inputRef.current) inputRef.current.value = '' }}
+              className="text-xs text-red-500 hover:underline cursor-pointer bg-transparent border-none text-left"
+            >
+              Supprimer
+            </button>
+          )}
+          <p className="text-[10px] text-slate-400">PNG, JPG, SVG — max 2 Mo</p>
+        </div>
+      </div>
+      <input
+        ref={inputRef}
+        name="logo"
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={e => {
+          const file = e.target.files?.[0]
+          if (file) setPreview(URL.createObjectURL(file))
+        }}
+      />
+    </div>
+  )
+}
 
 function Field({ field, defaultValue }) {
   if (field.type === 'textarea') {
@@ -47,7 +100,7 @@ function EditRow({ item, fields, updateAction, onCancel }) {
   useEffect(() => { if (state?.success) onCancel() }, [state])
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 p-4 bg-tint border border-primary/20 rounded-xl">
+    <form action={formAction} className="flex flex-col gap-3 p-4 bg-tint border border-primary/20 rounded-xl" encType="multipart/form-data">
       <input type="hidden" name="id" value={item.id} />
       {state?.error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{state.error}</p>
@@ -55,6 +108,7 @@ function EditRow({ item, fields, updateAction, onCancel }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {fields.map(f => <Field key={f.name} field={f} defaultValue={item[f.name]} />)}
       </div>
+      <LogoUpload currentLogo={item.logo ?? null} />
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} className="gap-1.5 cursor-pointer">
           <X size={13} /> Annuler
@@ -76,13 +130,14 @@ function AddRow({ fields, createAction, onCancel }) {
   useEffect(() => { if (state?.success) onCancel() }, [state])
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+    <form action={formAction} className="flex flex-col gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl" encType="multipart/form-data">
       {state?.error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{state.error}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {fields.map(f => <Field key={f.name} field={f} defaultValue="" />)}
       </div>
+      <LogoUpload currentLogo={null} />
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} className="gap-1.5 cursor-pointer">
           <X size={13} /> Annuler
@@ -98,34 +153,52 @@ function AddRow({ fields, createAction, onCancel }) {
   )
 }
 
-function ItemDisplay({ item, displayConfig }) {
+function ItemDisplay({ item, displayConfig, showGps }) {
   const { primary, secondary, detail, badge, count } = displayConfig
   return (
-    <div>
-      <div className="flex items-center gap-2">
-        <p className="text-sm font-semibold text-slate-900">{item[primary]}</p>
-        {badge && item[badge] && (
-          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-500">
-            {item[badge]}
-          </span>
+    <div className="flex items-center gap-3">
+      {item.logo
+        ? <img src={item.logo} alt={item[primary]} className="w-9 h-9 rounded-lg object-contain border border-slate-100 bg-white shrink-0" />
+        : <div className="w-9 h-9 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center shrink-0"><ImageIcon size={14} className="text-slate-300" /></div>
+      }
+      <div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-slate-900">{item[primary]}</p>
+          {badge && item[badge] && (
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+              {item[badge]}
+            </span>
+          )}
+          {showGps && (
+            item.lat != null && item.lng != null
+              ? <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                  <MapPin size={9} /> GPS
+                </span>
+              : <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-400">
+                  <MapPin size={9} /> Sans GPS
+                </span>
+          )}
+        </div>
+        {secondary && item[secondary] && (
+          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{item[secondary]}</p>
+        )}
+        {count && (
+          <p className="text-xs text-slate-400">
+            {item[count.field]} {item[count.field] !== 1 ? count.plural : count.singular}
+          </p>
+        )}
+        {detail && item[detail] && (
+          <p className="text-xs text-slate-400">{item[detail]}</p>
+        )}
+        {showGps && item.address && (
+          <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">📍 {item.address}</p>
         )}
       </div>
-      {secondary && item[secondary] && (
-        <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{item[secondary]}</p>
-      )}
-      {count && (
-        <p className="text-xs text-slate-400">
-          {item[count.field]} {item[count.field] !== 1 ? count.plural : count.singular}
-        </p>
-      )}
-      {detail && item[detail] && (
-        <p className="text-xs text-slate-400">{item[detail]}</p>
-      )}
     </div>
   )
 }
 
-export default function NetworkManager({ title, items, fields, displayConfig, createAction, updateAction, deleteAction }) {
+export default function NetworkManager({ title, items, fields, displayConfig, createAction, updateAction, deleteAction, showGps, mapHref, captureHrefBase }) {
   const router = useRouter()
   const [editingId, setEditingId]       = useState(null)
   const [adding, setAdding]             = useState(false)
@@ -139,13 +212,23 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
           <h1 className="text-lg md:text-xl font-semibold text-slate-900">{title}</h1>
           <p className="text-sm text-slate-400 mt-0.5">{items.length} entrée{items.length !== 1 ? 's' : ''}</p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => { setAdding(true); setEditingId(null) }}
-          className="cursor-pointer gap-1.5 shrink-0 bg-primary hover:bg-primary-hover text-white border-none"
-        >
-          <Plus size={14} /> Ajouter
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {showGps && mapHref && (
+            <Link
+              href={mapHref}
+              className="inline-flex items-center gap-1.5 text-sm font-medium h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors"
+            >
+              <Map size={14} /> Voir la carte
+            </Link>
+          )}
+          <Button
+            size="sm"
+            onClick={() => { setAdding(true); setEditingId(null) }}
+            className="cursor-pointer gap-1.5 bg-primary hover:bg-primary-hover text-white border-none"
+          >
+            <Plus size={14} /> Ajouter
+          </Button>
+        </div>
       </div>
 
       {adding && (
@@ -164,8 +247,18 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
             />
           ) : (
             <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-3 bg-white border border-slate-200 rounded-xl group hover:border-slate-300 transition-colors">
-              <div className="min-w-0"><ItemDisplay item={item} displayConfig={displayConfig} /></div>
+              <div className="min-w-0"><ItemDisplay item={item} displayConfig={displayConfig} showGps={showGps} /></div>
               <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                {showGps && captureHrefBase && (
+                  <Link
+                    href={`${captureHrefBase}?id=${item.id}&city=${encodeURIComponent(item.city ?? '')}&location=${encodeURIComponent(item.location ?? '')}`}
+                    className="h-7 px-2 flex items-center gap-1 rounded-md text-slate-400 hover:text-primary hover:bg-primary/5 cursor-pointer text-[11px] font-medium transition-colors"
+                    title="Capturer la position GPS"
+                  >
+                    <MapPin size={12} />
+                    <span className="hidden sm:inline">GPS</span>
+                  </Link>
+                )}
                 <button
                   onClick={() => { setEditingId(item.id); setAdding(false) }}
                   className="h-7 w-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer border-none bg-transparent transition-colors"

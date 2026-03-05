@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Plus, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react'
+import { Search, Plus, MoreHorizontal, Pencil, Trash2, Eye, Globe, EyeOff, CheckSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -40,12 +41,74 @@ const quickFilters = [
   { label: 'Planifiés',  fn: (a) => a.status === 'planifie' },
 ]
 
-export default function ArticlesTable({ articles, deleteArticleAction }) {
+export default function ArticlesTable({ articles, deleteArticleAction, toggleStatusAction, bulkAction }) {
   const router = useRouter()
-  const [deleteTarget, setDeleteTarget] = useState(null)
-  const [activeFilter, setActiveFilter] = useState(0)
+  const [deleteTarget, setDeleteTarget]   = useState(null)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [activeFilter, setActiveFilter]   = useState(0)
+  const [selected, setSelected]           = useState(new Set())
+  const [loadingId, setLoadingId]         = useState(null)
+  const [search, setSearch]               = useState('')
 
-  const displayed = articles.filter(quickFilters[activeFilter].fn)
+  const displayed = articles
+    .filter(quickFilters[activeFilter].fn)
+    .filter(a => !search || a.title.toLowerCase().includes(search.toLowerCase()))
+
+  const allSelected = displayed.length > 0 && displayed.every(a => selected.has(a.id))
+  const someSelected = selected.size > 0
+
+  function toggleSelect(id) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelected(prev => {
+        const next = new Set(prev)
+        displayed.forEach(a => next.delete(a.id))
+        return next
+      })
+    } else {
+      setSelected(prev => {
+        const next = new Set(prev)
+        displayed.forEach(a => next.add(a.id))
+        return next
+      })
+    }
+  }
+
+  async function handleToggleStatus(article) {
+    setLoadingId(article.id)
+    const fd = new FormData()
+    fd.set('id', article.id)
+    fd.set('status', article.status === 'publie' ? 'brouillon' : 'publie')
+    await toggleStatusAction(fd)
+    router.refresh()
+    setLoadingId(null)
+  }
+
+  async function handleBulk(action) {
+    if (action === 'delete') { setBulkDeleteOpen(true); return }
+    const fd = new FormData()
+    fd.set('ids', JSON.stringify([...selected]))
+    fd.set('action', action)
+    await bulkAction(fd)
+    setSelected(new Set())
+    router.refresh()
+  }
+
+  async function confirmBulkDelete() {
+    const fd = new FormData()
+    fd.set('ids', JSON.stringify([...selected]))
+    fd.set('action', 'delete')
+    await bulkAction(fd)
+    setSelected(new Set())
+    router.refresh()
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,7 +135,7 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
         {quickFilters.map(({ label, fn }, i) => (
           <button
             key={label}
-            onClick={() => setActiveFilter(i)}
+            onClick={() => { setActiveFilter(i); setSelected(new Set()) }}
             className={`text-sm font-medium px-3 py-1.5 rounded-lg border transition-all cursor-pointer
               ${activeFilter === i
                 ? 'bg-primary text-white border-primary'
@@ -80,9 +143,7 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
               }`}
           >
             {label}
-            <span className="ml-1.5 text-[11px] font-bold opacity-70">
-              {articles.filter(fn).length}
-            </span>
+            <span className="ml-1.5 text-[11px] font-bold opacity-70">{articles.filter(fn).length}</span>
           </button>
         ))}
       </div>
@@ -92,29 +153,56 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
         <div className="relative flex-1 min-w-0 sm:min-w-48 sm:max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher un article..."
             className="pl-9 pr-3 h-10 w-full bg-white border border-slate-200 rounded-lg text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors"
           />
         </div>
-        <Select>
-          <SelectTrigger className="w-full sm:w-40 bg-white border-slate-200 cursor-pointer">
-            <SelectValue placeholder="Statut" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="publie">Publié</SelectItem>
-            <SelectItem value="brouillon">Brouillon</SelectItem>
-            <SelectItem value="planifie">Planifié</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
+
+      {/* Bulk action bar */}
+      {someSelected && (
+        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl">
+          <CheckSquare size={15} className="text-primary shrink-0" />
+          <span className="text-sm font-semibold text-primary flex-1">
+            {selected.size} article{selected.size > 1 ? 's' : ''} sélectionné{selected.size > 1 ? 's' : ''}
+          </span>
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => handleBulk('publie')}
+              className="gap-1.5 cursor-pointer text-emerald-700 border-emerald-300 hover:bg-emerald-50">
+              <Globe size={13} /> Publier
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => handleBulk('brouillon')}
+              className="gap-1.5 cursor-pointer text-slate-600 border-slate-300 hover:bg-slate-50">
+              <EyeOff size={13} /> Dépublier
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => handleBulk('delete')}
+              className="gap-1.5 cursor-pointer text-red-600 border-red-300 hover:bg-red-50">
+              <Trash2 size={13} /> Supprimer
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}
+              className="cursor-pointer text-slate-400 hover:text-slate-600">
+              Désélectionner
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 hover:bg-slate-50 border-slate-200">
-              <TableHead className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400 pl-4 md:pl-6 w-[50%]">Article</TableHead>
+              <TableHead className="w-10 pl-4">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={toggleAll}
+                  className="cursor-pointer"
+                  aria-label="Tout sélectionner"
+                />
+              </TableHead>
+              <TableHead className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400 w-[40%]">Article</TableHead>
               <TableHead className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400 hidden md:table-cell">Catégorie</TableHead>
               <TableHead className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">Statut</TableHead>
               <TableHead className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400 hidden sm:table-cell">Date</TableHead>
@@ -127,17 +215,27 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
               const status = statusConfig[article.status] ?? statusConfig.brouillon
               const categoryName = article.category?.name ?? ''
               const catClass = categoryColors[categoryName] ?? 'bg-slate-50 text-slate-700 border-slate-200'
+              const isLoading = loadingId === article.id
+              const isPublie = article.status === 'publie'
 
               return (
-                <TableRow key={article.id} className="group border-slate-100 hover:bg-slate-50/60 transition-colors">
-                  <TableCell className="pl-4 md:pl-6 py-3 md:py-4">
+                <TableRow key={article.id} className={`group border-slate-100 hover:bg-slate-50/60 transition-colors ${selected.has(article.id) ? 'bg-primary/5' : ''}`}>
+
+                  {/* Checkbox */}
+                  <TableCell className="pl-4 w-10">
+                    <Checkbox
+                      checked={selected.has(article.id)}
+                      onCheckedChange={() => toggleSelect(article.id)}
+                      className="cursor-pointer"
+                    />
+                  </TableCell>
+
+                  {/* Article */}
+                  <TableCell className="py-3 md:py-4">
                     <div className="flex items-center gap-2 md:gap-3">
                       {article.image && (
-                        <img
-                          src={article.image}
-                          alt={article.title}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shrink-0"
-                        />
+                        <img src={article.image} alt={article.title}
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shrink-0" />
                       )}
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-900 truncate max-w-[140px] sm:max-w-[200px] md:max-w-60">
@@ -153,22 +251,33 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
                     </div>
                   </TableCell>
 
+                  {/* Catégorie */}
                   <TableCell className="hidden md:table-cell">
                     <span className={`text-[11px] font-bold uppercase px-2.5 py-1 rounded-md border ${catClass}`}>
                       {categoryName}
                     </span>
                   </TableCell>
 
+                  {/* Statut + toggle rapide */}
                   <TableCell>
-                    <Badge className={`text-[11px] font-semibold border ${status.className}`}>
-                      {status.label}
-                    </Badge>
+                    <button
+                      onClick={() => handleToggleStatus(article)}
+                      disabled={isLoading || article.status === 'planifie'}
+                      title={article.status === 'planifie' ? 'Planifié — éditer pour changer' : isPublie ? 'Cliquer pour dépublier' : 'Cliquer pour publier'}
+                      className="cursor-pointer disabled:cursor-default disabled:opacity-70 group/toggle"
+                    >
+                      <Badge className={`text-[11px] font-semibold border transition-all ${status.className} ${!isLoading && article.status !== 'planifie' ? 'group-hover/toggle:scale-105' : ''}`}>
+                        {isLoading ? '…' : status.label}
+                      </Badge>
+                    </button>
                   </TableCell>
 
+                  {/* Date */}
                   <TableCell className="text-xs text-slate-400 whitespace-nowrap hidden sm:table-cell">
                     {new Date(article.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </TableCell>
 
+                  {/* Actions */}
                   <TableCell className="pr-4 md:pr-6 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -176,24 +285,21 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
                           <MoreHorizontal size={16} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem
-                          onClick={() => router.push(`/blog/${article.slug}`)}
-                          className="gap-2 cursor-pointer text-slate-600"
-                        >
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => router.push(`/blog/${article.slug}`)} className="gap-2 cursor-pointer text-slate-600">
                           <Eye size={14} /> Voir l'article
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => router.push(`/admin/edit?id=${article.id}`)}
-                          className="gap-2 cursor-pointer text-slate-600"
-                        >
+                        <DropdownMenuItem onClick={() => router.push(`/admin/edit?id=${article.id}`)} className="gap-2 cursor-pointer text-slate-600">
                           <Pencil size={14} /> Modifier
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => setDeleteTarget(article)}
-                          className="gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                        >
+                        <DropdownMenuItem onClick={() => handleToggleStatus(article)} disabled={article.status === 'planifie'}
+                          className="gap-2 cursor-pointer text-slate-600">
+                          {isPublie ? <><EyeOff size={14} /> Dépublier</> : <><Globe size={14} /> Publier</>}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setDeleteTarget(article)}
+                          className="gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
                           <Trash2 size={14} /> Supprimer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -205,7 +311,7 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
 
             {displayed.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-16 text-center">
+                <TableCell colSpan={6} className="py-16 text-center">
                   <p className="text-sm font-medium text-slate-500 mb-1">Aucun article trouvé</p>
                   <button onClick={() => router.push('/admin/edit')} className="text-sm text-primary hover:underline cursor-pointer bg-transparent border-none font-medium">
                     Créer le premier article →
@@ -217,7 +323,7 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
         </Table>
       </div>
 
-      {/* AlertDialog suppression */}
+      {/* AlertDialog suppression unitaire */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -231,14 +337,31 @@ export default function ArticlesTable({ articles, deleteArticleAction }) {
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700 cursor-pointer"
               onClick={async () => {
-                const id = deleteTarget.id
                 const fd = new FormData()
-                fd.set('id', id)
+                fd.set('id', deleteTarget.id)
                 await deleteArticleAction(fd)
                 router.refresh()
               }}
             >
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AlertDialog suppression bulk */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {selected.size} article{selected.size > 1 ? 's' : ''} ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Les {selected.size} articles sélectionnés seront définitivement supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Annuler</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700 cursor-pointer" onClick={confirmBulkDelete}>
+              Supprimer tout
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
