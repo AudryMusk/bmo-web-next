@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { serviceSchema, parseResult } from '@/lib/schemas'
 
 function parseLines(val) {
   if (!val) return []
@@ -9,18 +10,21 @@ function parseLines(val) {
 }
 
 export async function updateServiceAction(_prevState, formData) {
-  const id          = formData.get('id')
-  const title       = formData.get('title')?.trim()
-  const description = formData.get('description')?.trim()
-  const icon        = formData.get('icon')?.trim() || null
-  const features    = parseLines(formData.get('features'))
+  const parsed = serviceSchema.safeParse({
+    id:          formData.get('id'),
+    title:       formData.get('title')?.trim(),
+    description: formData.get('description')?.trim(),
+    icon:        formData.get('icon')?.trim() || null,
+    features:    formData.get('features'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
 
-  if (!title) return { error: 'Le titre est requis.' }
-  if (!description) return { error: 'La description est requise.' }
+  const { id, title, description, icon, features } = parsed.data
 
   await prisma.service.update({
     where: { id },
-    data: { title, description, icon, features },
+    data: { title, description, icon, features: parseLines(features) },
   })
 
   revalidatePath('/services/particuliers')

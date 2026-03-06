@@ -23,7 +23,7 @@ const categoryIcons = { Ingénierie: Code2, Design: Palette, Produit: Package, M
 
 const emptyForm = { name: '', description: '', color: COLORS[0] }
 
-function CategoryForm({ form, onChange }) {
+function CategoryForm({ form, onChange, fieldErrors }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
@@ -32,11 +32,14 @@ function CategoryForm({ form, onChange }) {
           placeholder="ex. Ingénierie"
           value={form.name}
           onChange={e => onChange({ ...form, name: e.target.value })}
-          className="h-9 rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors"
+          className={`h-9 rounded-lg border px-3 text-sm outline-none focus:ring-2 transition-colors ${fieldErrors?.name ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/15'}`}
         />
-        {form.name && (
-          <p className="text-xs text-slate-400">Slug : <span className="font-mono">{form.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}</span></p>
-        )}
+        {fieldErrors?.name
+          ? <p className="text-xs text-red-500">{fieldErrors.name[0]}</p>
+          : form.name && (
+            <p className="text-xs text-slate-400">Slug : <span className="font-mono">{form.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}</span></p>
+          )
+        }
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-slate-700">Description</label>
@@ -45,8 +48,11 @@ function CategoryForm({ form, onChange }) {
           placeholder="Décrivez cette catégorie..."
           value={form.description}
           onChange={e => onChange({ ...form, description: e.target.value })}
-          className="w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors resize-none"
+          className={`w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 transition-colors resize-none ${fieldErrors?.description ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/15'}`}
         />
+        {fieldErrors?.description && (
+          <p className="text-xs text-red-500">{fieldErrors.description[0]}</p>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-slate-700">Couleur</label>
@@ -170,7 +176,11 @@ export default function CategoriesManager({ categories, createAction, updateActi
             <input type="hidden" name="name" value={form.name} />
             <input type="hidden" name="description" value={form.description} />
             <input type="hidden" name="color" value={form.color} />
-            <CategoryForm form={form} onChange={setForm} />
+            <CategoryForm
+              form={form}
+              onChange={setForm}
+              fieldErrors={dialogMode === 'create' ? createState?.fieldErrors : updateState?.fieldErrors}
+            />
             {(createState?.error || updateState?.error) && (
               <p className="text-sm text-red-600 mt-3">{createState?.error || updateState?.error}</p>
             )}

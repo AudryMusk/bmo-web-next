@@ -2,37 +2,43 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { tariffRowSchema, tariffMetaSchema, parseResult } from '@/lib/schemas'
 
 export async function updateTariffRowAction(_prevState, formData) {
-  const id                 = formData.get('id')
-  const min                = parseFloat(formData.get('min'))
-  const max                = formData.get('max')                ? parseFloat(formData.get('max'))                : null
-  const fraisRetrait       = formData.get('fraisRetrait')       ? parseFloat(formData.get('fraisRetrait'))       : null
-  const fraisEnvoi         = formData.get('fraisEnvoi')         ? parseFloat(formData.get('fraisEnvoi'))         : null
-  const minEnvoi           = formData.get('minEnvoi')           ? parseFloat(formData.get('minEnvoi'))           : null
-  const maxEnvoi           = formData.get('maxEnvoi')           ? parseFloat(formData.get('maxEnvoi'))           : null
-  const frais              = formData.get('frais')              ? parseFloat(formData.get('frais'))              : null
-  const fraisBmoVersAutres = formData.get('fraisBmoVersAutres') ? parseFloat(formData.get('fraisBmoVersAutres')) : null
-  const fraisAutresVersBmo = formData.get('fraisAutresVersBmo') || null
+  const raw = {
+    id:                 formData.get('id'),
+    min:                formData.get('min'),
+    max:                formData.get('max'),
+    fraisRetrait:       formData.get('fraisRetrait'),
+    fraisEnvoi:         formData.get('fraisEnvoi'),
+    minEnvoi:           formData.get('minEnvoi'),
+    maxEnvoi:           formData.get('maxEnvoi'),
+    frais:              formData.get('frais'),
+    fraisBmoVersAutres: formData.get('fraisBmoVersAutres'),
+    fraisAutresVersBmo: formData.get('fraisAutresVersBmo') || null,
+  }
 
-  if (isNaN(min)) return { error: 'Montant minimum invalide.' }
+  const parsed = tariffRowSchema.safeParse(raw)
+  const err    = parseResult(parsed)
+  if (err) return err
 
-  await prisma.tariffRow.update({
-    where: { id },
-    data: { min, max, fraisRetrait, fraisEnvoi, minEnvoi, maxEnvoi, frais, fraisBmoVersAutres, fraisAutresVersBmo },
-  })
+  const { id, ...data } = parsed.data
+  await prisma.tariffRow.update({ where: { id }, data })
 
   revalidatePath('/tarifs')
   return { success: true }
 }
 
 export async function updateTariffMetaAction(_prevState, formData) {
-  const id    = formData.get('id')
-  const title = formData.get('title')?.trim()
-  const note  = formData.get('note')?.trim() || null
+  const parsed = tariffMetaSchema.safeParse({
+    id:    formData.get('id'),
+    title: formData.get('title')?.trim(),
+    note:  formData.get('note')?.trim() || null,
+  })
+  const err = parseResult(parsed)
+  if (err) return err
 
-  if (!title) return { error: 'Le titre est requis.' }
-
+  const { id, title, note } = parsed.data
   await prisma.tariffMeta.update({ where: { id }, data: { title, note } })
   revalidatePath('/tarifs')
   return { success: true }

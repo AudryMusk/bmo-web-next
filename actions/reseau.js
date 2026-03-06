@@ -4,6 +4,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { microfinanceSchema, distributorSchema, gabSchema, partnerSchema, parseResult } from '@/lib/schemas'
 
 async function saveLogo(file) {
   if (!file || typeof file === 'string' || file.size === 0) return null
@@ -13,6 +14,216 @@ async function saveLogo(file) {
   await mkdir(uploadDir, { recursive: true })
   await writeFile(join(uploadDir, filename), Buffer.from(await file.arrayBuffer()))
   return `/uploads/${filename}`
+}
+
+async function reverseGeocode(lat, lng) {
+  const key = process.env.GOOGLE_MAPS_API_KEY
+  if (!key || !lat || !lng) return null
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`
+    )
+    const data = await res.json()
+    return data.results?.[0]?.formatted_address ?? null
+  } catch {
+    return null
+  }
+}
+
+// ─── Microfinances ────────────────────────────────────────────────────────────
+
+export async function createMicrofinanceAction(_prevState, formData) {
+  const parsed = microfinanceSchema.safeParse({
+    name:     formData.get('name')?.trim(),
+    agencies: formData.get('agencies'),
+    lat:      formData.get('lat'),
+    lng:      formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { name, agencies, lat, lng } = parsed.data
+  const logo    = await saveLogo(formData.get('logo'))
+  const address = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  const count   = await prisma.microfinance.count()
+  await prisma.microfinance.create({ data: { name, agencies, logo, lat, lng, address, order: count } })
+  revalidatePath('/admin/reseau/microfinances')
+  return { success: true }
+}
+
+export async function updateMicrofinanceAction(_prevState, formData) {
+  const id     = formData.get('id')
+  const parsed = microfinanceSchema.safeParse({
+    name:     formData.get('name')?.trim(),
+    agencies: formData.get('agencies'),
+    lat:      formData.get('lat'),
+    lng:      formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { name, agencies, lat, lng } = parsed.data
+  const newLogo  = await saveLogo(formData.get('logo'))
+  const existing = await prisma.microfinance.findUnique({ where: { id }, select: { logo: true } })
+  const logo     = newLogo ?? existing?.logo ?? null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  await prisma.microfinance.update({ where: { id }, data: { name, agencies, logo, lat, lng, address } })
+  revalidatePath('/admin/reseau/microfinances')
+  return { success: true }
+}
+
+export async function deleteMicrofinanceAction(formData) {
+  const id = formData.get('id')
+  await prisma.microfinance.delete({ where: { id } })
+  revalidatePath('/admin/reseau/microfinances')
+}
+
+// ─── Distributors ─────────────────────────────────────────────────────────────
+
+export async function createDistributorAction(_prevState, formData) {
+  const parsed = distributorSchema.safeParse({
+    name:     formData.get('name')?.trim(),
+    location: formData.get('location')?.trim(),
+    phone:    formData.get('phone')?.trim(),
+    lat:      formData.get('lat'),
+    lng:      formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { name, location, phone, lat, lng } = parsed.data
+  const logo    = await saveLogo(formData.get('logo'))
+  const address = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  const count   = await prisma.distributor.count()
+  await prisma.distributor.create({ data: { name, location, phone, logo, lat, lng, address, order: count } })
+  revalidatePath('/admin/reseau/distributeurs')
+  return { success: true }
+}
+
+export async function updateDistributorAction(_prevState, formData) {
+  const id     = formData.get('id')
+  const parsed = distributorSchema.safeParse({
+    name:     formData.get('name')?.trim(),
+    location: formData.get('location')?.trim(),
+    phone:    formData.get('phone')?.trim(),
+    lat:      formData.get('lat'),
+    lng:      formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { name, location, phone, lat, lng } = parsed.data
+  const newLogo  = await saveLogo(formData.get('logo'))
+  const existing = await prisma.distributor.findUnique({ where: { id }, select: { logo: true } })
+  const logo     = newLogo ?? existing?.logo ?? null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  await prisma.distributor.update({ where: { id }, data: { name, location, phone, logo, lat, lng, address } })
+  revalidatePath('/admin/reseau/distributeurs')
+  return { success: true }
+}
+
+export async function deleteDistributorAction(formData) {
+  const id = formData.get('id')
+  await prisma.distributor.delete({ where: { id } })
+  revalidatePath('/admin/reseau/distributeurs')
+}
+
+// ─── GAB ATMs ─────────────────────────────────────────────────────────────────
+
+export async function createGabAction(_prevState, formData) {
+  const parsed = gabSchema.safeParse({
+    city:     formData.get('city')?.trim(),
+    location: formData.get('location')?.trim(),
+    lat:      formData.get('lat'),
+    lng:      formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { city, location, lat, lng } = parsed.data
+  const logo    = await saveLogo(formData.get('logo'))
+  const address = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  const count   = await prisma.gabAtm.count()
+  await prisma.gabAtm.create({ data: { city, location, logo, lat, lng, address, order: count } })
+  revalidatePath('/admin/reseau/gab')
+  return { success: true }
+}
+
+export async function updateGabAction(_prevState, formData) {
+  const id     = formData.get('id')
+  const parsed = gabSchema.safeParse({
+    city:     formData.get('city')?.trim(),
+    location: formData.get('location')?.trim(),
+    lat:      formData.get('lat'),
+    lng:      formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { city, location, lat, lng } = parsed.data
+  const newLogo  = await saveLogo(formData.get('logo'))
+  const existing = await prisma.gabAtm.findUnique({ where: { id }, select: { logo: true } })
+  const logo     = newLogo ?? existing?.logo ?? null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  await prisma.gabAtm.update({ where: { id }, data: { city, location, logo, lat, lng, address } })
+  revalidatePath('/admin/reseau/gab')
+  return { success: true }
+}
+
+export async function deleteGabAction(formData) {
+  const id = formData.get('id')
+  await prisma.gabAtm.delete({ where: { id } })
+  revalidatePath('/admin/reseau/gab')
+}
+
+// ─── Partners ─────────────────────────────────────────────────────────────────
+
+export async function createPartnerAction(_prevState, formData) {
+  const parsed = partnerSchema.safeParse({
+    name:        formData.get('name')?.trim(),
+    category:    formData.get('category')?.trim(),
+    description: formData.get('description')?.trim(),
+    lat:         formData.get('lat'),
+    lng:         formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { name, category, description, lat, lng } = parsed.data
+  const logo    = await saveLogo(formData.get('logo'))
+  const address = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  const count   = await prisma.partner.count()
+  await prisma.partner.create({ data: { name, category, description, logo, lat, lng, address, order: count } })
+  revalidatePath('/admin/reseau/partenaires')
+  return { success: true }
+}
+
+export async function updatePartnerAction(_prevState, formData) {
+  const id     = formData.get('id')
+  const parsed = partnerSchema.safeParse({
+    name:        formData.get('name')?.trim(),
+    category:    formData.get('category')?.trim(),
+    description: formData.get('description')?.trim(),
+    lat:         formData.get('lat'),
+    lng:         formData.get('lng'),
+  })
+  const err = parseResult(parsed)
+  if (err) return err
+
+  const { name, category, description, lat, lng } = parsed.data
+  const newLogo  = await saveLogo(formData.get('logo'))
+  const existing = await prisma.partner.findUnique({ where: { id }, select: { logo: true } })
+  const logo     = newLogo ?? existing?.logo ?? null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+  await prisma.partner.update({ where: { id }, data: { name, category, description, logo, lat, lng, address } })
+  revalidatePath('/admin/reseau/partenaires')
+  return { success: true }
+}
+
+export async function deletePartnerAction(formData) {
+  const id = formData.get('id')
+  await prisma.partner.delete({ where: { id } })
+  revalidatePath('/admin/reseau/partenaires')
 }
 
 // ─── Microfinances ────────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { toSlug } from '@/lib/utils'
 import { getSession } from '@/lib/session'
+import { articleSchema, parseResult } from '@/lib/schemas'
 
 async function saveBanner(file) {
   if (!file || typeof file === 'string' || file.size === 0) return null
@@ -27,26 +28,31 @@ const STATUS_MAP = {
 }
 
 export async function createArticleAction(_prevState, formData) {
-  const title       = formData.get('title')
-  const content     = formData.get('content')
-  const categoryId  = formData.get('category') || null
-  const statusRaw   = formData.get('status') ?? 'brouillon'
-  const publishedAt = formData.get('publishedAt') || null
-  const metaTitle   = formData.get('metaTitle') || null
-  const metaDesc    = formData.get('metaDescription') || null
-  const image       = await saveBanner(formData.get('banner'))
-
-  if (!title || title.length < 20) {
-    return { error: 'Le titre doit faire au moins 20 caractères.' }
+  const raw = {
+    title:           formData.get('title'),
+    content:         formData.get('content'),
+    status:          formData.get('status') ?? 'brouillon',
+    categoryId:      formData.get('category') || null,
+    publishedAt:     formData.get('publishedAt') || null,
+    metaTitle:       formData.get('metaTitle') || null,
+    metaDescription: formData.get('metaDescription') || null,
   }
+
+  const parsed = articleSchema.safeParse(raw)
+  const err    = parseResult(parsed)
+  if (err) return err
+
+  const { title, content, status: statusRaw, categoryId, publishedAt, metaTitle, metaDescription } = parsed.data
+
   if (!content || content.trim() === '' || content === '<p></p>') {
-    return { error: 'Le contenu ne peut pas être vide.' }
+    return { error: 'Le contenu ne peut pas être vide.', fieldErrors: { content: ['Le contenu ne peut pas être vide.'] } }
   }
 
   const plainText = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
   const wordCount = plainText ? plainText.split(' ').length : 0
-  const status = STATUS_MAP[statusRaw] ?? 'brouillon'
-  const session = await getSession()
+  const status    = STATUS_MAP[statusRaw] ?? 'brouillon'
+  const session   = await getSession()
+  const image     = await saveBanner(formData.get('banner'))
 
   await prisma.article.create({
     data: {
@@ -56,7 +62,7 @@ export async function createArticleAction(_prevState, formData) {
       status,
       publishedAt:     publishedAt ? new Date(publishedAt) : null,
       metaTitle,
-      metaDescription: metaDesc,
+      metaDescription,
       slug:            toSlug(title),
       image,
       author:          session?.name ?? 'Admin',
@@ -71,25 +77,29 @@ export async function createArticleAction(_prevState, formData) {
 }
 
 export async function updateArticleAction(_prevState, formData) {
-  const id          = formData.get('id')
-  const title       = formData.get('title')
-  const content     = formData.get('content')
-  const categoryId  = formData.get('category') || null
-  const statusRaw   = formData.get('status') ?? 'brouillon'
-  const publishedAt = formData.get('publishedAt') || null
-  const metaTitle   = formData.get('metaTitle') || null
-  const metaDesc    = formData.get('metaDescription') || null
-  const newImage    = await saveBanner(formData.get('banner'))
-  const existing    = await prisma.article.findUnique({ where: { id }, select: { image: true } })
-  const image       = newImage ?? existing?.image ?? null
-
-  if (!title || title.length < 20) {
-    return { error: 'Le titre doit faire au moins 20 caractères.' }
+  const id  = formData.get('id')
+  const raw = {
+    title:           formData.get('title'),
+    content:         formData.get('content'),
+    status:          formData.get('status') ?? 'brouillon',
+    categoryId:      formData.get('category') || null,
+    publishedAt:     formData.get('publishedAt') || null,
+    metaTitle:       formData.get('metaTitle') || null,
+    metaDescription: formData.get('metaDescription') || null,
   }
+
+  const parsed = articleSchema.safeParse(raw)
+  const err    = parseResult(parsed)
+  if (err) return err
+
+  const { title, content, status: statusRaw, categoryId, publishedAt, metaTitle, metaDescription } = parsed.data
 
   const plainText = (content ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
   const wordCount = plainText ? plainText.split(' ').length : 0
-  const status = STATUS_MAP[statusRaw] ?? 'brouillon'
+  const status    = STATUS_MAP[statusRaw] ?? 'brouillon'
+  const newImage  = await saveBanner(formData.get('banner'))
+  const existing  = await prisma.article.findUnique({ where: { id }, select: { image: true } })
+  const image     = newImage ?? existing?.image ?? null
 
   await prisma.article.update({
     where: { id },
@@ -100,7 +110,7 @@ export async function updateArticleAction(_prevState, formData) {
       status,
       publishedAt:     publishedAt ? new Date(publishedAt) : null,
       metaTitle,
-      metaDescription: metaDesc,
+      metaDescription,
       slug:            toSlug(title),
       image,
       readTime:        Math.max(1, Math.round(wordCount / 200)),

@@ -65,8 +65,11 @@ export default function LoginForm({ loginAction }) {
                 <input
                   id="email" name="email" type="email"
                   placeholder="admin@bmo.com" required
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors"
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 transition-colors ${state?.fieldErrors?.email ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/15'}`}
                 />
+                {state?.fieldErrors?.email && (
+                  <p className="text-xs text-red-500">{state.fieldErrors.email[0]}</p>
+                )}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -74,8 +77,11 @@ export default function LoginForm({ loginAction }) {
                 <input
                   id="password" name="password" type="password"
                   placeholder="••••••••" required
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors"
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 transition-colors ${state?.fieldErrors?.password ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-primary focus:ring-primary/15'}`}
                 />
+                {state?.fieldErrors?.password && (
+                  <p className="text-xs text-red-500">{state.fieldErrors.password[0]}</p>
+                )}
               </div>
 
               {isLocked ? (
