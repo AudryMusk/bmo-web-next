@@ -1,11 +1,49 @@
 'use client'
 
 import { useFormState } from 'react-dom'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import SubmitButton from './SubmitButton'
 
+const MAX_ATTEMPTS = 5
+const LOCKOUT_SECONDS = 60
+
 export default function LoginForm({ loginAction }) {
   const [state, formAction] = useFormState(loginAction, null)
+
+  const [attempts, setAttempts]     = useState(0)
+  const [lockedFor, setLockedFor]   = useState(0) // secondes restantes
+  const timerRef                    = useRef(null)
+
+  // Dès qu'une erreur revient du serveur → incrémenter le compteur
+  useEffect(() => {
+    if (!state?.error) return
+    setAttempts(prev => {
+      const next = prev + 1
+      if (next >= MAX_ATTEMPTS) {
+        setLockedFor(LOCKOUT_SECONDS)
+      }
+      return next
+    })
+  }, [state])
+
+  // Décompte du verrouillage
+  useEffect(() => {
+    if (lockedFor <= 0) return
+    timerRef.current = setInterval(() => {
+      setLockedFor(s => {
+        if (s <= 1) {
+          clearInterval(timerRef.current)
+          setAttempts(0)
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current)
+  }, [lockedFor])
+
+  const isLocked = lockedFor > 0
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-slate-50 p-6 md:p-10">
@@ -40,17 +78,27 @@ export default function LoginForm({ loginAction }) {
                 />
               </div>
 
-              {state?.error && (
+              {isLocked ? (
+                <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
+                  Trop de tentatives. Réessayez dans <strong>{lockedFor}s</strong>.
+                </p>
+              ) : state?.error && (
                 <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                   {state.error}
+                  {attempts > 1 && (
+                    <span className="block text-xs mt-0.5 text-red-400">
+                      {MAX_ATTEMPTS - attempts} tentative{MAX_ATTEMPTS - attempts > 1 ? 's' : ''} restante{MAX_ATTEMPTS - attempts > 1 ? 's' : ''}
+                    </span>
+                  )}
                 </p>
               )}
 
               <SubmitButton
+                disabled={isLocked}
                 loadingText="Connexion..."
-                className="w-full bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer border-none text-sm"
+                className="w-full bg-primary hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer border-none text-sm"
               >
-                Se connecter
+                {isLocked ? `Bloqué (${lockedFor}s)` : 'Se connecter'}
               </SubmitButton>
 
               <p className="text-center text-xs text-slate-400">

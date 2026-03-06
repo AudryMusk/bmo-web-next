@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 import type { NextRequest } from 'next/server'
-import { ratelimit } from '@/lib/rate-limit'
 
 const AUTH_PATHS = ['/login', '/register']
 const ADMIN_PREFIX = '/admin'
@@ -11,21 +10,6 @@ const SECRET = new TextEncoder().encode(
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-
-  // Rate limiting sur /login — 5 tentatives / 60s via Upstash Redis
-  if (pathname === '/login') {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-              ?? request.headers.get('x-real-ip')
-              ?? 'unknown'
-    const { success, reset } = await ratelimit.limit(ip)
-    if (!success) {
-      const retryAfter = Math.ceil((reset - Date.now()) / 1000)
-      return new NextResponse(`Trop de tentatives. Réessayez dans ${retryAfter}s.`, {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      })
-    }
-  }
 
   const token = request.cookies.get('bmo_token')?.value
   let isAuthenticated = false
