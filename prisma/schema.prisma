@@ -111,6 +111,12 @@ model TariffRow {
   tariffMeta         TariffMeta @relation(fields: [tariffMetaId], references: [id], onDelete: Cascade)
 }
 
+model InternationalCountry {
+  id    String @id @default(cuid())
+  name  String
+  order Int    @default(0)
+}
+
 // ─── Network ─────────────────────────────────────────────────────────────────
 
 model Microfinance {

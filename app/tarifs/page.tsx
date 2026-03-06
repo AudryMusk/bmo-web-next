@@ -6,6 +6,7 @@ import {
   getTarifsCEMAC,
   getTarifsMobileMoney,
   getTarifsInternational,
+  getInternationalCountries,
 } from "@/lib/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -26,12 +27,13 @@ const formatCurrency = (amount: number | null) => {
 export const revalidate = 60
 
 export default async function Tarifs() {
-  const [tarifsUEMOA, tarifsSenegal, tarifsCEMAC, tarifsMobileMoney, tarifsInternational] = await Promise.all([
+  const [tarifsUEMOA, tarifsSenegal, tarifsCEMAC, tarifsMobileMoney, tarifsInternational, internationalCountries] = await Promise.all([
     getTarifsUEMOA(),
     getTarifsSenegal(),
     getTarifsCEMAC(),
     getTarifsMobileMoney(),
     getTarifsInternational(),
+    getInternationalCountries(),
   ])
   return (
     <div className="min-h-screen bg-background">
@@ -326,22 +328,13 @@ export default async function Tarifs() {
                 </div>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    "États-Unis",
-                    "Europe",
-                    "Canada",
-                    "Inde",
-                    "Royaume-Uni",
-                    "Émirats Arabes Unis",
-                    "Nigeria",
-                    "Cameroun",
-                  ].map((country, index) => (
+                  {internationalCountries.map((country) => (
                     <div
-                      key={index}
+                      key={country.id}
                       className="flex items-center gap-3 p-4 bg-muted/50 rounded-xl"
                     >
                       <Globe className="w-5 h-5 text-primary" />
-                      <span className="font-medium">{country}</span>
+                      <span className="font-medium">{country.name}</span>
                     </div>
                   ))}
                 </div>

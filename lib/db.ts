@@ -69,6 +69,10 @@ export const getTarifsCEMAC        = () => getTariff('cemac')
 export const getTarifsMobileMoney  = () => getTariff('mobile')
 export const getTarifsInternational = () => getTariff('international')
 
+export async function getInternationalCountries() {
+  return prisma.internationalCountry.findMany({ orderBy: { order: 'asc' } })
+}
+
 // ─── Network ──────────────────────────────────────────────────────────────────
 
 export async function getMicrofinances() {

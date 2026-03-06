@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { updateServiceAction } from '@/actions/services'
+import { updateServiceAction, createServiceAction, deleteServiceAction } from '@/actions/services'
 import ServicesManager from '@/components/admin/ServicesManager'
 
 export const metadata = { title: 'Services Business — CMS B-MO' }
@@ -10,5 +10,14 @@ export default async function ServicesBusinessPage() {
     orderBy: { order: 'asc' },
   })
 
-  return <ServicesManager services={services} updateAction={updateServiceAction} typeLabel="Business" />
+  return (
+    <ServicesManager
+      services={services}
+      updateAction={updateServiceAction}
+      createAction={createServiceAction}
+      deleteAction={deleteServiceAction}
+      typeLabel="Business"
+      serviceType="business"
+    />
+  )
 }

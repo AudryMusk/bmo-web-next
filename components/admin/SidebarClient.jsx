@@ -125,14 +125,7 @@ export default function SidebarClient({ onNavigate, logoutAction, userName }) {
           <DropdownMenuContent side="top" align="start" className="w-52">
             <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <User size={14} /> Profil
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings size={14} /> Paramètres
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+    
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <form action={logoutAction}>
