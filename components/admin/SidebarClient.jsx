@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import SubmitButton from './SubmitButton'
 
 const navItems = [
   {
@@ -135,12 +136,12 @@ export default function SidebarClient({ onNavigate, logoutAction, userName }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className="w-full flex items-center gap-2 text-red-500 cursor-pointer bg-transparent border-none text-sm"
+                <SubmitButton
+                  loadingText="Déconnexion…"
+                  className="w-full flex items-center gap-2 text-red-500 cursor-pointer bg-transparent border-none text-sm disabled:opacity-60"
                 >
                   <LogOut size={14} /> Se déconnecter
-                </button>
+                </SubmitButton>
               </form>
             </DropdownMenuItem>
           </DropdownMenuContent>
