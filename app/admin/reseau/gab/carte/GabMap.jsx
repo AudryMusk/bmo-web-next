@@ -6,6 +6,9 @@ import { MapPin, Navigation2, X, Wifi, WifiOff } from 'lucide-react'
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
+// Configurer la clé au niveau module — doit être fait avant tout appel à importLibrary
+if (MAPS_API_KEY) setOptions({ key: MAPS_API_KEY, v: 'weekly' })
+
 export default function GabMap({ gabs }) {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
@@ -24,8 +27,6 @@ export default function GabMap({ gabs }) {
       setLoading(false)
       return
     }
-
-    setOptions({ apiKey: MAPS_API_KEY, version: 'weekly' })
 
     Promise.all([
       importLibrary('maps'),

@@ -21,10 +21,13 @@ export async function createMicrofinanceAction(_prevState, formData) {
   const name     = formData.get('name')?.trim()
   const agencies = parseInt(formData.get('agencies'), 10)
   const logo     = await saveLogo(formData.get('logo'))
+  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   if (isNaN(agencies)) return { error: "Nombre d'agences invalide." }
   const count = await prisma.microfinance.count()
-  await prisma.microfinance.create({ data: { name, agencies, logo, order: count } })
+  await prisma.microfinance.create({ data: { name, agencies, logo, lat, lng, address, order: count } })
   revalidatePath('/admin/reseau/microfinances')
   return { success: true }
 }
@@ -36,9 +39,12 @@ export async function updateMicrofinanceAction(_prevState, formData) {
   const newLogo  = await saveLogo(formData.get('logo'))
   const existing = await prisma.microfinance.findUnique({ where: { id }, select: { logo: true } })
   const logo     = newLogo ?? existing?.logo ?? null
+  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   if (isNaN(agencies)) return { error: "Nombre d'agences invalide." }
-  await prisma.microfinance.update({ where: { id }, data: { name, agencies, logo } })
+  await prisma.microfinance.update({ where: { id }, data: { name, agencies, logo, lat, lng, address } })
   revalidatePath('/admin/reseau/microfinances')
   return { success: true }
 }
@@ -56,10 +62,13 @@ export async function createDistributorAction(_prevState, formData) {
   const location = formData.get('location')?.trim()
   const phone    = formData.get('phone')?.trim() || ''
   const logo     = await saveLogo(formData.get('logo'))
+  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   if (!location) return { error: 'La localisation est requise.' }
   const count = await prisma.distributor.count()
-  await prisma.distributor.create({ data: { name, location, phone, logo, order: count } })
+  await prisma.distributor.create({ data: { name, location, phone, logo, lat, lng, address, order: count } })
   revalidatePath('/admin/reseau/distributeurs')
   return { success: true }
 }
@@ -72,9 +81,12 @@ export async function updateDistributorAction(_prevState, formData) {
   const newLogo  = await saveLogo(formData.get('logo'))
   const existing = await prisma.distributor.findUnique({ where: { id }, select: { logo: true } })
   const logo     = newLogo ?? existing?.logo ?? null
+  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   if (!location) return { error: 'La localisation est requise.' }
-  await prisma.distributor.update({ where: { id }, data: { name, location, phone, logo } })
+  await prisma.distributor.update({ where: { id }, data: { name, location, phone, logo, lat, lng, address } })
   revalidatePath('/admin/reseau/distributeurs')
   return { success: true }
 }
@@ -146,9 +158,12 @@ export async function createPartnerAction(_prevState, formData) {
   const category    = formData.get('category')?.trim() || ''
   const description = formData.get('description')?.trim() || ''
   const logo        = await saveLogo(formData.get('logo'))
+  const lat         = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng         = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address     = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   const count = await prisma.partner.count()
-  await prisma.partner.create({ data: { name, category, description, logo, order: count } })
+  await prisma.partner.create({ data: { name, category, description, logo, lat, lng, address, order: count } })
   revalidatePath('/admin/reseau/partenaires')
   return { success: true }
 }
@@ -161,8 +176,11 @@ export async function updatePartnerAction(_prevState, formData) {
   const newLogo     = await saveLogo(formData.get('logo'))
   const existing    = await prisma.partner.findUnique({ where: { id }, select: { logo: true } })
   const logo        = newLogo ?? existing?.logo ?? null
+  const lat         = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng         = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address     = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
-  await prisma.partner.update({ where: { id }, data: { name, category, description, logo } })
+  await prisma.partner.update({ where: { id }, data: { name, category, description, logo, lat, lng, address } })
   revalidatePath('/admin/reseau/partenaires')
   return { success: true }
 }

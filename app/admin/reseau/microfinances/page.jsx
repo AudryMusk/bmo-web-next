@@ -29,6 +29,9 @@ export default async function MicrofinancesPage() {
       createAction={createMicrofinanceAction}
       updateAction={updateMicrofinanceAction}
       deleteAction={deleteMicrofinanceAction}
+      showGps
+      mapHref="/admin/reseau/microfinances/carte"
+      captureHrefBase="/admin/reseau/microfinances/capture"
     />
   )
 }

@@ -118,6 +118,9 @@ model Microfinance {
   name     String  @unique
   agencies Int
   logo     String?
+  lat      Float?
+  lng      Float?
+  address  String?
   order    Int     @default(0)
 }
 
@@ -127,6 +130,9 @@ model Distributor {
   location String  @db.Text
   phone    String
   logo     String?
+  lat      Float?
+  lng      Float?
+  address  String?
   order    Int     @default(0)
 }
 
@@ -147,5 +153,8 @@ model Partner {
   category    String
   description String  @db.Text
   logo        String?
+  lat         Float?
+  lng         Float?
+  address     String?
   order       Int     @default(0)
 }

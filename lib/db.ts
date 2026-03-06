@@ -90,6 +90,10 @@ export async function getGabUBA(): Promise<Record<string, string[]>> {
   return grouped
 }
 
+export async function getGabAtms() {
+  return prisma.gabAtm.findMany({ orderBy: [{ city: 'asc' }, { order: 'asc' }] })
+}
+
 export async function getPartenaires() {
   return prisma.partner.findMany({ orderBy: { order: 'asc' } })
 }

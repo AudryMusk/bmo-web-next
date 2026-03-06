@@ -31,6 +31,9 @@ export default async function DistributeursPage() {
       createAction={createDistributorAction}
       updateAction={updateDistributorAction}
       deleteAction={deleteDistributorAction}
+      showGps
+      mapHref="/admin/reseau/distributeurs/carte"
+      captureHrefBase="/admin/reseau/distributeurs/capture"
     />
   )
 }

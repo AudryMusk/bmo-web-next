@@ -31,6 +31,9 @@ export default async function PartenairesPage() {
       createAction={createPartnerAction}
       updateAction={updatePartnerAction}
       deleteAction={deletePartnerAction}
+      showGps
+      mapHref="/admin/reseau/partenaires/carte"
+      captureHrefBase="/admin/reseau/partenaires/capture"
     />
   )
 }

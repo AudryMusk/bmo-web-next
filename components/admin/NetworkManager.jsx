@@ -251,7 +251,7 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
               <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 {showGps && captureHrefBase && (
                   <Link
-                    href={`${captureHrefBase}?id=${item.id}&city=${encodeURIComponent(item.city ?? '')}&location=${encodeURIComponent(item.location ?? '')}`}
+                    href={`${captureHrefBase}?id=${item.id}&name=${encodeURIComponent(item.name ?? '')}&city=${encodeURIComponent(item.city ?? '')}&location=${encodeURIComponent(item.location ?? '')}`}
                     className="h-7 px-2 flex items-center gap-1 rounded-md text-slate-400 hover:text-primary hover:bg-primary/5 cursor-pointer text-[11px] font-medium transition-colors"
                     title="Capturer la position GPS"
                   >

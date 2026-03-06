@@ -6,6 +6,7 @@ import {
   getGabUBA,
   getPartenaires,
   getNetworkStats,
+  getGabAtms,
 } from "@/lib/db";
 import {
   Building2,
@@ -16,16 +17,18 @@ import {
   Store,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PublicNetworkMap from "@/components/ui/PublicNetworkMap";
 
 export const revalidate = 60
 
 export default async function Reseau() {
-  const [microfinances, distributeurs, gabUBA, partenaires, stats] = await Promise.all([
+  const [microfinances, distributeurs, gabUBA, partenaires, stats, gabAtms] = await Promise.all([
     getMicrofinances(),
     getDistributeurs(),
     getGabUBA(),
     getPartenaires(),
     getNetworkStats(),
+    getGabAtms(),
   ])
   const totalAgencies = stats.agencies
   const totalGAB = stats.gabCount
@@ -145,6 +148,12 @@ export default async function Reseau() {
                   ))}
                 </div>
               </div>
+              <PublicNetworkMap
+                items={microfinances}
+                primaryField="name"
+                markerEmoji="🏦"
+                markerColor="#e85d04"
+              />
             </TabsContent>
 
             {/* Distributeurs */}
@@ -180,6 +189,13 @@ export default async function Reseau() {
                   ))}
                 </div>
               </div>
+              <PublicNetworkMap
+                items={distributeurs}
+                primaryField="name"
+                secondaryField="location"
+                markerEmoji="🏪"
+                markerColor="#e85d04"
+              />
             </TabsContent>
 
             {/* GAB UBA */}
@@ -228,6 +244,13 @@ export default async function Reseau() {
                   })}
                 </div>
               </div>
+              <PublicNetworkMap
+                items={gabAtms}
+                primaryField="location"
+                secondaryField="city"
+                markerEmoji="🏧"
+                markerColor="#dc2626"
+              />
             </TabsContent>
 
             {/* Partenaires */}
@@ -266,6 +289,13 @@ export default async function Reseau() {
                   ))}
                 </div>
               </div>
+              <PublicNetworkMap
+                items={partenaires}
+                primaryField="name"
+                secondaryField="category"
+                markerEmoji="🤝"
+                markerColor="#e85d04"
+              />
             </TabsContent>
           </Tabs>
         </div>
