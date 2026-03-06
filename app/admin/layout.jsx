@@ -7,12 +7,14 @@ import AppLayoutClient from '@/components/admin/AppLayoutClient'
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 export default async function AdminLayout({ children }) {
-  const session = await getSession()
-  if (!session) {
+  const token = await getSession()
+  if (!token) {
     redirect('/login')
   }
 
-  const userName = session.name ?? session.email
+  // Le nom de l'user sera affiché via le header x-user-permissions côté client
+  // Pour l'instant on laisse un placeholder — à enrichir quand /auth/me sera appelé ici
+  const userName = 'Admin'
 
   return (
     <div className={inter.className} style={{ minHeight: '100vh' }}>
