@@ -15,9 +15,11 @@ import {
   CreditCard,
   Handshake,
   Store,
+  Network,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PublicNetworkMap from "@/components/ui/PublicNetworkMap";
+import NetworkMap from "@/components/admin/NetworkMap.jsx";
 
 export const revalidate = 60
 
@@ -148,7 +150,7 @@ export default async function Reseau() {
                   ))}
                 </div>
               </div>
-              <PublicNetworkMap
+              <NetworkMap
                 items={microfinances}
                 primaryField="name"
                 markerEmoji="🏦"
@@ -189,7 +191,7 @@ export default async function Reseau() {
                   ))}
                 </div>
               </div>
-              <PublicNetworkMap
+              <NetworkMap
                 items={distributeurs}
                 primaryField="name"
                 secondaryField="location"
@@ -244,7 +246,7 @@ export default async function Reseau() {
                   })}
                 </div>
               </div>
-              <PublicNetworkMap
+              <NetworkMap
                 items={gabAtms}
                 primaryField="location"
                 secondaryField="city"
@@ -289,7 +291,7 @@ export default async function Reseau() {
                   ))}
                 </div>
               </div>
-              <PublicNetworkMap
+              <NetworkMap
                 items={partenaires}
                 primaryField="name"
                 secondaryField="category"

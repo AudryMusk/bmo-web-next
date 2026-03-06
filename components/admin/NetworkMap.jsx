@@ -20,7 +20,7 @@ const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
  *   markerColor    — couleur hex de la pin (ex: "#dc2626")
  */
 export default function NetworkMap({
-  items = [],
+  items = /** @type {Record<string, any>[]} */ ([]),
   primaryField = 'name',
   secondaryField = 'city',
   entityLabel = 'Entité',
