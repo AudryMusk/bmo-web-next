@@ -18,7 +18,6 @@ import {
   Network,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PublicNetworkMap from "@/components/ui/PublicNetworkMap";
 import NetworkMap from "@/components/admin/NetworkMap.jsx";
 
 export const revalidate = 60
