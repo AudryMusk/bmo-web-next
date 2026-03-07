@@ -104,8 +104,10 @@ async function reverseGeocode(lat, lng) {
   if (!key || !lat || !lng) return null
   try {
     const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`,
+      { redirect: 'follow' }
     )
+    if (!res.ok) return null
     const data = await res.json()
     return data.results?.[0]?.formatted_address ?? null
   } catch {

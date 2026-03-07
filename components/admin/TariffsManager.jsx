@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Pencil, X, Check, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import SubmitButton from './SubmitButton'
+import InternationalCountriesManager from './InternationalCountriesManager'
 
 const FIXED_REGIONS = ['uemoa', 'senegal', 'cemac', 'mobile', 'international']
 
@@ -292,7 +293,7 @@ function CreateMetaForm({ createMetaAction, onCancel, onCreated }) {
   )
 }
 
-export default function TariffsManager({ tariffs, updateRowAction, createRowAction, deleteRowAction, createMetaAction, deleteMetaAction }) {
+export default function TariffsManager({ tariffs, updateRowAction, createRowAction, deleteRowAction, createMetaAction, deleteMetaAction, countries, createCountryAction, updateCountryAction, deleteCountryAction }) {
   const allMeta   = tariffs // array of { id, region, title, note, rows }
   const regions   = allMeta.map(t => ({ key: t.region, label: t.title || t.region }))
   const [activeTab, setActiveTab] = useState(regions[0]?.key ?? '')
@@ -377,6 +378,17 @@ export default function TariffsManager({ tariffs, updateRowAction, createRowActi
             createRowAction={createRowAction}
             deleteRowAction={deleteRowAction}
           />
+
+          {activeTab === 'international' && countries && (
+            <div className="border-t border-slate-200 pt-6">
+              <InternationalCountriesManager
+                countries={countries}
+                createAction={createCountryAction}
+                updateAction={updateCountryAction}
+                deleteAction={deleteCountryAction}
+              />
+            </div>
+          )}
         </>
       ) : (
         <p className="text-sm text-slate-400">Aucune donnée pour cette région.</p>
