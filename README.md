@@ -283,3 +283,4 @@ All routes under `/admin/*` require authentication. Unauthenticated users are re
 2. On success, a signed JWT is created with `jose` and stored in an HTTP-only cookie
 3. `middleware.ts` verifies the cookie on every request to `/admin/*`
 4. Session expires after **7 days**
+# gci-website
