@@ -37,6 +37,8 @@ const Navbar = () => {
     return pathname.startsWith(href);
   };
 
+  const isHome = pathname === "/";
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -69,7 +71,9 @@ const Navbar = () => {
     <nav
       className={cn(
         "fixed top-0 left-0 right-0 z-50 duration-300",
-        isScrolled && "bg-white dark:bg-black/50 dark:backdrop-blur-lg"
+        isHome
+          ? isScrolled && "bg-white dark:bg-black/50 dark:backdrop-blur-lg"
+          : "bg-white dark:bg-background border-b border-black/10 dark:border-white/10"
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,9 +98,9 @@ const Navbar = () => {
                       "flex items-center gap-1 text-sm font-semibold transition-colors duration-200",
                       isActive(link.href)
                         ? "text-primary"
-                        : isScrolled
-                          ? "text-black/50 dark:text-white/75"
-                          : "text-white/75"
+                        : isHome && !isScrolled
+                          ? "text-white/75 hover:text-white"
+                          : "text-black/60 dark:text-white/75 hover:text-primary"
                     )}
                   >
                     {link.name}
@@ -131,9 +135,9 @@ const Navbar = () => {
                     "text-sm font-semibold transition-colors duration-200 hover:text-primary",
                     isActive(link.href)
                       ? "text-primary"
-                      : isScrolled
-                        ? "text-black/50 dark:text-white/75"
-                        : "text-white/75"
+                      : isHome && !isScrolled
+                        ? "text-white/75 hover:text-white"
+                        : "text-black/60 dark:text-white/75 hover:text-primary"
                   )}
                 >
                   {link.name}
