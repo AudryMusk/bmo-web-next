@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Pencil, Trash2, X, Check, ImageIcon, MapPin, Map } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -95,7 +95,7 @@ function Field({ field, defaultValue }) {
 }
 
 function EditRow({ item, fields, updateAction, onCancel }) {
-  const [state, formAction] = useFormState(updateAction, null)
+  const [state, formAction] = useActionState(updateAction, null)
 
   useEffect(() => { if (state?.success) onCancel() }, [state])
 
@@ -125,7 +125,7 @@ function EditRow({ item, fields, updateAction, onCancel }) {
 }
 
 function AddRow({ fields, createAction, onCancel }) {
-  const [state, formAction] = useFormState(createAction, null)
+  const [state, formAction] = useActionState(createAction, null)
 
   useEffect(() => { if (state?.success) onCancel() }, [state])
 

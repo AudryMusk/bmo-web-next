@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Code2, Palette, Package, BarChart2, Pencil, Trash2, Plus, Layers } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -79,8 +79,8 @@ export default function CategoriesManager({ categories, createAction, updateActi
   const [form, setForm]                 = useState(emptyForm)
 
   const router = useRouter()
-  const [createState, createFormAction] = useFormState(createAction, null)
-  const [updateState, updateFormAction] = useFormState(updateAction, null)
+  const [createState, createFormAction] = useActionState(createAction, null)
+  const [updateState, updateFormAction] = useActionState(updateAction, null)
 
   useEffect(() => { if (createState?.success) setDialogMode(null) }, [createState])
   useEffect(() => { if (updateState?.success) setDialogMode(null) }, [updateState])

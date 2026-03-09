@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Save, ChevronDown, ChevronUp, ImagePlus } from 'lucide-react'
@@ -15,7 +15,7 @@ export default function ArticleForm({ createAction, updateAction, article = null
   const action = isEdit ? updateAction : createAction
   const router = useRouter()
 
-  const [state, formAction] = useFormState(action, { error: null })
+  const [state, formAction] = useActionState(action, { error: null })
   const [isPending, setIsPending] = useState(false)
   const [seoOpen, setSeoOpen]     = useState(false)
   const [bannerPreview, setBannerPreview] = useState(article?.image ?? null)

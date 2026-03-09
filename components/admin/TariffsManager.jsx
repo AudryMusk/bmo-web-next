@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { useState, useEffect } from 'react'
 import { Pencil, X, Check, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ function fmt(v) {
 }
 
 function TariffRowEdit({ row, updateRowAction, onCancel, onSaved }) {
-  const [state, formAction] = useFormState(updateRowAction, null)
+  const [state, formAction] = useActionState(updateRowAction, null)
   if (state?.success) { onSaved(); return null }
 
   const field = (name, label, isText = false) => (
@@ -66,8 +66,8 @@ function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }
   const [editingId, setEditingId]   = useState(null)
   const [addingRow, setAddingRow]   = useState(false)
   const [confirmId, setConfirmId]   = useState(null)
-  const [createState, createFormAction] = useFormState(createRowAction, null)
-  const [deleteState, deleteFormAction] = useFormState(deleteRowAction, null)
+  const [createState, createFormAction] = useActionState(createRowAction, null)
+  const [deleteState, deleteFormAction] = useActionState(deleteRowAction, null)
 
   useEffect(() => { if (createState?.success) setAddingRow(false) }, [createState])
   useEffect(() => { if (deleteState?.success) setConfirmId(null)  }, [deleteState])
@@ -244,7 +244,7 @@ function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }
 
 /* ─── Formulaire nouvelle grille ─────────────────────────────────────────── */
 function CreateMetaForm({ createMetaAction, onCancel, onCreated }) {
-  const [state, formAction] = useFormState(createMetaAction, null)
+  const [state, formAction] = useActionState(createMetaAction, null)
   useEffect(() => { if (state?.success) onCreated() }, [state])
 
   return (
@@ -299,7 +299,7 @@ export default function TariffsManager({ tariffs, updateRowAction, createRowActi
   const [activeTab, setActiveTab] = useState(regions[0]?.key ?? '')
   const [creatingMeta, setCreatingMeta] = useState(false)
   const [confirmDeleteMeta, setConfirmDeleteMeta] = useState(false)
-  const [deleteMetaState, deleteMetaFormAction]   = useFormState(deleteMetaAction, null)
+  const [deleteMetaState, deleteMetaFormAction]   = useActionState(deleteMetaAction, null)
 
   useEffect(() => { if (deleteMetaState?.success) { setConfirmDeleteMeta(false); setActiveTab(regions[0]?.key ?? '') } }, [deleteMetaState])
 

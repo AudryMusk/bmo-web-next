@@ -4,11 +4,12 @@ import LocationCaptureForm from '@/components/admin/LocationCaptureForm'
 
 export const metadata = { title: 'Distributeur — Position GPS' }
 
-export default function DistributeursCapturePage({ searchParams }) {
-  const entityId      = searchParams?.id ?? null
-  const nameParam     = searchParams?.name ?? ''
-  const cityParam     = searchParams?.city ?? ''
-  const locationParam = searchParams?.location ?? ''
+export default async function DistributeursCapturePage({ searchParams }) {
+  const params        = await searchParams
+  const entityId      = params?.id ?? null
+  const nameParam     = params?.name ?? ''
+  const cityParam     = params?.city ?? ''
+  const locationParam = params?.location ?? ''
 
   return (
     <Suspense>

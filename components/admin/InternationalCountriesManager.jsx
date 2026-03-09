@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { useState, useEffect } from 'react'
 import { Pencil, X, Check, Plus, Trash2, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,8 @@ import SubmitButton from './SubmitButton'
 function CountryRow({ country, updateAction, deleteAction }) {
   const [editing, setEditing]         = useState(false)
   const [confirming, setConfirming]   = useState(false)
-  const [updateState, updateFormAction] = useFormState(updateAction, null)
-  const [deleteState, deleteFormAction] = useFormState(deleteAction, null)
+  const [updateState, updateFormAction] = useActionState(updateAction, null)
+  const [deleteState, deleteFormAction] = useActionState(deleteAction, null)
 
   useEffect(() => { if (updateState?.success) setEditing(false) }, [updateState])
   useEffect(() => { if (deleteState?.success) setConfirming(false) }, [deleteState])
@@ -93,7 +93,7 @@ function CountryRow({ country, updateAction, deleteAction }) {
 }
 
 function AddCountryForm({ createAction, onCancel, onCreated }) {
-  const [state, formAction] = useFormState(createAction, null)
+  const [state, formAction] = useActionState(createAction, null)
   useEffect(() => { if (state?.success) onCreated() }, [state])
 
   return (

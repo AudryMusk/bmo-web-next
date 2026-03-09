@@ -5,10 +5,11 @@ import LocationCaptureForm from '@/components/admin/LocationCaptureForm'
 export const metadata = { title: 'Microfinance — Position GPS' }
 
 // Wrapper pour lire les searchParams côté serveur
-export default function MicrofinancesCapturePage({ searchParams }) {
-  const entityId  = searchParams?.id ?? null
-  const nameParam = searchParams?.name ?? ''
-  const cityParam = searchParams?.city ?? ''
+export default async function MicrofinancesCapturePage({ searchParams }) {
+  const params    = await searchParams
+  const entityId  = params?.id ?? null
+  const nameParam = params?.name ?? ''
+  const cityParam = params?.city ?? ''
 
   return (
     <Suspense>

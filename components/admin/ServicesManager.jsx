@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { useState, useEffect } from 'react'
 import { Pencil, X, Check, ChevronDown, ChevronUp, Plus, Trash2, icons as LucideIcons } from 'lucide-react'
 
@@ -16,7 +16,7 @@ import SubmitButton from './SubmitButton'
 
 /* ─── Formulaire création ─────────────────────────────────────────────────── */
 function CreateServiceForm({ createAction, type, onCancel, onCreated }) {
-  const [state, formAction] = useFormState(createAction, null)
+  const [state, formAction] = useActionState(createAction, null)
   useEffect(() => { if (state?.success) onCreated() }, [state])
 
   const field = (name, label, required = false, textarea = false, placeholder = '', rows = 3) => (
@@ -72,8 +72,8 @@ function CreateServiceForm({ createAction, type, onCancel, onCreated }) {
 function ServiceRow({ service, updateAction, deleteAction, isOpen, onToggle }) {
   const [editing, setEditing]       = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const [state, formAction]         = useFormState(updateAction, null)
-  const [deleteState, deleteFormAction] = useFormState(deleteAction, null)
+  const [state, formAction]         = useActionState(updateAction, null)
+  const [deleteState, deleteFormAction] = useActionState(deleteAction, null)
 
   useEffect(() => { if (state?.success) setEditing(false) }, [state])
 
