@@ -51,7 +51,7 @@ const CEOMessageSection = () => {
 
                 {/* Image container */}
                 <div className="relative bg-card rounded-3xl overflow-hidden shadow-2xl">
-                  <div className="aspect-[4/5] flex items-center justify-center bg-[url('/pdg-bestcash.jpg')] bg-cover bg-center" />
+                  <div className="aspect-[4/5] flex items-center justify-center bg-[url('/pdg-bestcash.png')] bg-cover bg-center" />
 
                   {/* Badge de titre */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/80 to-transparent p-6 pt-12">
