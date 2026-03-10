@@ -19,6 +19,39 @@ async function saveBanner(file) {
   return `/uploads/${filename}`
 }
 
+// ─── Upload d'image pour l'éditeur Tiptap ───────────────────────────────────
+export async function uploadEditorImageAction(formData) {
+  const file = formData.get('image')
+  if (!file || typeof file === 'string' || file.size === 0) {
+    return { error: 'Aucune image fournie.' }
+  }
+  
+  try {
+    const sharp = (await import('sharp')).default
+    const buffer = Buffer.from(await file.arrayBuffer())
+    
+    // Recadrage en carré (crop au centre) + redimensionnement à 800x800
+    const squareImage = await sharp(buffer)
+      .resize(800, 800, { fit: 'cover', position: 'center' })
+      .toBuffer()
+    
+    const filename = `editor-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+    const uploadDir = join(process.cwd(), 'public', 'uploads')
+    await mkdir(uploadDir, { recursive: true })
+    await writeFile(join(uploadDir, filename), squareImage)
+    
+    return { url: `/uploads/${filename}` }
+  } catch (error) {
+    // Fallback si sharp n'est pas disponible
+    const ext = file.name.split('.').pop()
+    const filename = `editor-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const uploadDir = join(process.cwd(), 'public', 'uploads')
+    await mkdir(uploadDir, { recursive: true })
+    await writeFile(join(uploadDir, filename), Buffer.from(await file.arrayBuffer()))
+    return { url: `/uploads/${filename}` }
+  }
+}
+
 const STATUS_MAP = {
   brouillon: 'brouillon',
   publie:    'publie',

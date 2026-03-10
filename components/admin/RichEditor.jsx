@@ -6,11 +6,13 @@ import UnderlineExt from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
 import LinkExt from '@tiptap/extension-link'
+import ImageExt from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
+import { uploadEditorImageAction } from '@/actions/articles'
 import {
   Bold, Italic, Underline, Strikethrough, Code, Code2,
-  List, ListOrdered, Quote, Link, Highlighter,
+  List, ListOrdered, Quote, Link, Highlighter, ImagePlus,
   Undo2, Redo2, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   Heading1, Heading2, Heading3,
 } from 'lucide-react'
@@ -36,6 +38,8 @@ function Divider() {
 }
 
 export default function RichEditor({ value, onChange, placeholder = 'Saisissez votre contenu ici...' }) {
+  const fileInputRef = useRef(null)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
@@ -43,6 +47,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Saisissez v
       Highlight.configure({ multicolor: false }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       LinkExt.configure({ openOnClick: false }),
+      ImageExt.configure({ inline: true, allowBase64: false }),
       Placeholder.configure({ placeholder }),
     ],
     content: value,
@@ -65,10 +70,43 @@ export default function RichEditor({ value, onChange, placeholder = 'Saisissez v
     else editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
   }, [editor])
 
+  const handleImageUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !editor) return
+
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const result = await uploadEditorImageAction(formData)
+      if (result.error) {
+        alert(result.error)
+        return
+      }
+      editor.chain().focus().setImage({ src: result.url }).run()
+    } catch (error) {
+      alert('Erreur lors de l\'upload de l\'image')
+    }
+
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }, [editor])
+
+  const triggerImageUpload = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+
   if (!editor) return null
 
   return (
     <div className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
       <div className="flex items-center gap-0.5 flex-wrap px-3 py-2 border-b border-slate-200 bg-slate-50">
         <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Annuler"><Undo2 size={14} /></ToolBtn>
         <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Rétablir"><Redo2 size={14} /></ToolBtn>
@@ -95,6 +133,7 @@ export default function RichEditor({ value, onChange, placeholder = 'Saisissez v
         <ToolBtn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} title="Justifier"><AlignJustify size={14} /></ToolBtn>
         <Divider />
         <ToolBtn onClick={setLink} active={editor.isActive('link')} title="Insérer un lien"><Link size={14} /></ToolBtn>
+        <ToolBtn onClick={triggerImageUpload} title="Insérer une image"><ImagePlus size={14} /></ToolBtn>
       </div>
       <EditorContent editor={editor} className="flex-1 px-6 py-5 min-h-96 cursor-text" onClick={() => editor.commands.focus()} />
     </div>
