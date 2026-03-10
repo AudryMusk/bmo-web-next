@@ -14,8 +14,6 @@ const ALL_PERMISSION_KEYS = APP_PERMISSIONS.map(p => p.slug)
  * Appelle GET /auth/me/:appId sur le module user avec le token Bearer.
  * Retourne les permissions ou null si le token est invalide.
  *
- * Réponse : { user: {...}, role: { permissions: string[] | "not-done-yet" } }
- * Si role.permissions n'est pas encore un tableau → tous les accès sont accordés.
  */
 async function fetchUserPermissions(token: string): Promise<string[] | null> {
   try {
@@ -26,7 +24,10 @@ async function fetchUserPermissions(token: string): Promise<string[] | null> {
     if (!res.ok) return null
     const data = await res.json()
 
-    const perms = data?.role?.permissions
+    let perms = data?.role?.permissions
+    if (typeof perms === 'string') {
+      try { perms = JSON.parse(perms) } catch { return null }
+    }
     if (!Array.isArray(perms)) return ALL_PERMISSION_KEYS
     return perms
   } catch {
