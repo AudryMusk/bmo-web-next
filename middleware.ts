@@ -8,7 +8,7 @@ const USER_MODULE_URL = process.env.USER_MODULE_API_URL ?? 'https://api.module-u
 const APP_ID          = process.env.USER_MODULE_APP_ID  ?? ''
 
 // Toutes les clés de permissions disponibles dans l'app (fallback "not-done-yet")
-const ALL_PERMISSION_KEYS = APP_PERMISSIONS.map(p => p.key)
+const ALL_PERMISSION_KEYS = APP_PERMISSIONS.map(p => p.slug)
 
 /**
  * Appelle GET /auth/me/:appId sur le module user avec le token Bearer.

@@ -3,49 +3,49 @@
 // disponibles dans cette app, puis les attribue librement à ses utilisateurs.
 
 export interface Permission {
-  key: string
+  slug: string
   label: string
-  group: string
+  description: string
 }
 
 export const APP_PERMISSIONS: Permission[] = [
   // Dashboard
-  { key: 'dashboard:view',              group: 'Dashboard',     label: 'Voir le tableau de bord' },
+  { slug: 'dashboard:view',              description: 'Accéder au tableau de bord et consulter les statistiques générales de l\'application.',                         label: 'Voir le tableau de bord' },
 
   // Articles
-  { key: 'articles:view',               group: 'Articles',      label: 'Voir les articles' },
-  { key: 'articles:create',             group: 'Articles',      label: 'Créer un article' },
-  { key: 'articles:edit',               group: 'Articles',      label: 'Modifier un article' },
-  { key: 'articles:delete',             group: 'Articles',      label: 'Supprimer un article' },
+  { slug: 'articles:view',               description: 'Consulter la liste des articles publiés et leurs détails.',                                                      label: 'Voir les articles' },
+  { slug: 'articles:create',             description: 'Rédiger et publier de nouveaux articles sur le site.',                                                           label: 'Créer un article' },
+  { slug: 'articles:edit',               description: 'Modifier le contenu, le titre ou les métadonnées d\'un article existant.',                                       label: 'Modifier un article' },
+  { slug: 'articles:delete',             description: 'Supprimer définitivement un article du site.',                                                                   label: 'Supprimer un article' },
 
   // Catégories
-  { key: 'categories:view',             group: 'Catégories',    label: 'Voir les catégories' },
-  { key: 'categories:create',           group: 'Catégories',    label: 'Créer une catégorie' },
-  { key: 'categories:edit',             group: 'Catégories',    label: 'Modifier une catégorie' },
-  { key: 'categories:delete',           group: 'Catégories',    label: 'Supprimer une catégorie' },
+  { slug: 'categories:view',             description: 'Consulter la liste des catégories utilisées pour classer les articles.',                                         label: 'Voir les catégories' },
+  { slug: 'categories:create',           description: 'Créer une nouvelle catégorie pour organiser les articles.',                                                      label: 'Créer une catégorie' },
+  { slug: 'categories:edit',             description: 'Renommer ou modifier une catégorie existante.',                                                                  label: 'Modifier une catégorie' },
+  { slug: 'categories:delete',           description: 'Supprimer une catégorie existante.',                                                                             label: 'Supprimer une catégorie' },
 
   // Services
-  { key: 'services:view',               group: 'Services',      label: 'Voir les services' },
-  { key: 'services:edit',               group: 'Services',      label: 'Modifier les services' },
+  { slug: 'services:view',               description: 'Consulter les services proposés par l\'organisation et leur configuration.',                                     label: 'Voir les services' },
+  { slug: 'services:edit',               description: 'Modifier la description, le statut ou les paramètres d\'un service existant.',                                   label: 'Modifier les services' },
 
   // Tarifs
-  { key: 'tarifs:view',                 group: 'Tarifs',        label: 'Voir les tarifs' },
-  { key: 'tarifs:edit',                 group: 'Tarifs',        label: 'Modifier les tarifs' },
+  { slug: 'tarifs:view',                 description: 'Consulter la grille tarifaire des produits et services.',                                                        label: 'Voir les tarifs' },
+  { slug: 'tarifs:edit',                 description: 'Mettre à jour les prix et conditions tarifaires des produits et services.',                                      label: 'Modifier les tarifs' },
 
   // Réseau
-  { key: 'reseau:view',                 group: 'Réseau',        label: 'Voir le réseau' },
-  { key: 'reseau:microfinances:create', group: 'Réseau',        label: 'Ajouter une microfinance' },
-  { key: 'reseau:microfinances:edit',   group: 'Réseau',        label: 'Modifier une microfinance' },
-  { key: 'reseau:microfinances:delete', group: 'Réseau',        label: 'Supprimer une microfinance' },
-  { key: 'reseau:distributeurs:create', group: 'Réseau',        label: 'Ajouter un distributeur' },
-  { key: 'reseau:distributeurs:edit',   group: 'Réseau',        label: 'Modifier un distributeur' },
-  { key: 'reseau:distributeurs:delete', group: 'Réseau',        label: 'Supprimer un distributeur' },
-  { key: 'reseau:gab:create',           group: 'Réseau',        label: 'Ajouter un GAB/ATM' },
-  { key: 'reseau:gab:edit',             group: 'Réseau',        label: 'Modifier un GAB/ATM' },
-  { key: 'reseau:gab:delete',           group: 'Réseau',        label: 'Supprimer un GAB/ATM' },
-  { key: 'reseau:partenaires:create',   group: 'Réseau',        label: 'Ajouter un partenaire' },
-  { key: 'reseau:partenaires:edit',     group: 'Réseau',        label: 'Modifier un partenaire' },
-  { key: 'reseau:partenaires:delete',   group: 'Réseau',        label: 'Supprimer un partenaire' },
+  { slug: 'reseau:view',                 description: 'Consulter l\'ensemble du réseau : microfinances, distributeurs, GAB/ATM et partenaires.',                        label: 'Voir le réseau' },
+  { slug: 'reseau:microfinances:create', description: 'Ajouter un nouvel établissement de microfinance au réseau.',                                                     label: 'Ajouter une microfinance' },
+  { slug: 'reseau:microfinances:edit',   description: 'Modifier les informations d\'un établissement de microfinance existant.',                                        label: 'Modifier une microfinance' },
+  { slug: 'reseau:microfinances:delete', description: 'Retirer un établissement de microfinance du réseau.',                                                            label: 'Supprimer une microfinance' },
+  { slug: 'reseau:distributeurs:create', description: 'Ajouter un nouveau point de distribution au réseau.',                                                            label: 'Ajouter un distributeur' },
+  { slug: 'reseau:distributeurs:edit',   description: 'Modifier les informations d\'un distributeur existant.',                                                         label: 'Modifier un distributeur' },
+  { slug: 'reseau:distributeurs:delete', description: 'Retirer un distributeur du réseau.',                                                                             label: 'Supprimer un distributeur' },
+  { slug: 'reseau:gab:create',           description: 'Enregistrer un nouveau GAB/ATM dans le réseau.',                                                                 label: 'Ajouter un GAB/ATM' },
+  { slug: 'reseau:gab:edit',             description: 'Mettre à jour les informations d\'un GAB/ATM existant (localisation, statut, etc.).',                            label: 'Modifier un GAB/ATM' },
+  { slug: 'reseau:gab:delete',           description: 'Retirer un GAB/ATM du réseau.',                                                                                  label: 'Supprimer un GAB/ATM' },
+  { slug: 'reseau:partenaires:create',   description: 'Ajouter un nouveau partenaire au réseau.',                                                                       label: 'Ajouter un partenaire' },
+  { slug: 'reseau:partenaires:edit',     description: 'Modifier les informations d\'un partenaire existant.',                                                           label: 'Modifier un partenaire' },
+  { slug: 'reseau:partenaires:delete',   description: 'Retirer un partenaire du réseau.',                                                                               label: 'Supprimer un partenaire' },
 ]
 
 // ─── Mapping route admin → permission requise ─────────────────────────────────
