@@ -11,6 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import SubmitButton from './SubmitButton'
+import { useWithLoading } from '@/context/LoadingContext'
 
 function LogoUpload({ currentLogo }) {
   const [preview, setPreview] = useState(currentLogo ?? null)
@@ -200,6 +201,7 @@ function ItemDisplay({ item, displayConfig, showGps }) {
 
 export default function NetworkManager({ title, items, fields, displayConfig, createAction, updateAction, deleteAction, showGps, mapHref, captureHrefBase }) {
   const router = useRouter()
+  const { withLoading } = useWithLoading()
   const [editingId, setEditingId]       = useState(null)
   const [adding, setAdding]             = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -297,7 +299,7 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
                 const id = deleteTarget.id
                 const fd = new FormData()
                 fd.set('id', id)
-                await deleteAction(fd)
+                await withLoading(() => deleteAction(fd))
                 router.refresh()
               }}
             >

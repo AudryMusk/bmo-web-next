@@ -20,6 +20,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useWithLoading } from '@/context/LoadingContext'
 
 const statusConfig = {
   publie:    { label: 'Publié',    className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50' },
@@ -43,6 +44,7 @@ const quickFilters = [
 
 export default function ArticlesTable({ articles, deleteArticleAction, toggleStatusAction, bulkAction }) {
   const router = useRouter()
+  const { withLoading } = useWithLoading()
   const [deleteTarget, setDeleteTarget]   = useState(null)
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [activeFilter, setActiveFilter]   = useState(0)
@@ -86,7 +88,7 @@ export default function ArticlesTable({ articles, deleteArticleAction, toggleSta
     const fd = new FormData()
     fd.set('id', article.id)
     fd.set('status', article.status === 'publie' ? 'brouillon' : 'publie')
-    await toggleStatusAction(fd)
+    await withLoading(() => toggleStatusAction(fd))
     router.refresh()
     setLoadingId(null)
   }
@@ -96,7 +98,7 @@ export default function ArticlesTable({ articles, deleteArticleAction, toggleSta
     const fd = new FormData()
     fd.set('ids', JSON.stringify([...selected]))
     fd.set('action', action)
-    await bulkAction(fd)
+    await withLoading(() => bulkAction(fd))
     setSelected(new Set())
     router.refresh()
   }
@@ -105,7 +107,7 @@ export default function ArticlesTable({ articles, deleteArticleAction, toggleSta
     const fd = new FormData()
     fd.set('ids', JSON.stringify([...selected]))
     fd.set('action', 'delete')
-    await bulkAction(fd)
+    await withLoading(() => bulkAction(fd))
     setSelected(new Set())
     router.refresh()
   }
@@ -339,7 +341,7 @@ export default function ArticlesTable({ articles, deleteArticleAction, toggleSta
               onClick={async () => {
                 const fd = new FormData()
                 fd.set('id', deleteTarget.id)
-                await deleteArticleAction(fd)
+                await withLoading(() => deleteArticleAction(fd))
                 router.refresh()
               }}
             >

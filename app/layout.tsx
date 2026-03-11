@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import TopProgressBar from "@/components/TopProgressBar";
+import { LoadingProvider } from "@/context/LoadingContext";
+import BmoLoader from "@/components/BmoLoader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,14 +37,17 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        <TopProgressBar />
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            {children}
-          </TooltipProvider>
-        </ThemeProvider>
+        <LoadingProvider>
+          <BmoLoader />
+          <TopProgressBar />
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              {children}
+            </TooltipProvider>
+          </ThemeProvider>
+        </LoadingProvider>
       </body>
     </html>
   );

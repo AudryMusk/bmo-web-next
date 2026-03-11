@@ -17,6 +17,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import SubmitButton from './SubmitButton'
+import { useWithLoading } from '@/context/LoadingContext'
 
 const COLORS = ['#2563EB', '#7C3AED', '#D97706', '#059669', '#DC2626', '#0891B2', '#BE185D', '#374151']
 const categoryIcons = { Ingénierie: Code2, Design: Palette, Produit: Package, Marketing: BarChart2 }
@@ -79,6 +80,7 @@ export default function CategoriesManager({ categories, createAction, updateActi
   const [form, setForm]                 = useState(emptyForm)
 
   const router = useRouter()
+  const { withLoading } = useWithLoading()
   const [createState, createFormAction] = useActionState(createAction, null)
   const [updateState, updateFormAction] = useActionState(updateAction, null)
 
@@ -221,7 +223,7 @@ export default function CategoriesManager({ categories, createAction, updateActi
                 const id = deleteTarget.id
                 const fd = new FormData()
                 fd.set('id', id)
-                await deleteAction(fd)
+                await withLoading(() => deleteAction(fd))
                 router.refresh()
               }}
             >
