@@ -168,6 +168,7 @@ export default function ArticleForm({ createAction, updateAction, article = null
             maxLength={100}
             className="w-full text-2xl md:text-4xl font-bold text-slate-900 placeholder:text-slate-300 bg-transparent border-none outline-none leading-tight"
           />
+          <input type="hidden" name="slug" value={toSlug(title)} />
           {title && (
             <p className="text-xs text-slate-400">Slug : <span className="font-mono">{toSlug(title)}</span></p>
           )}
