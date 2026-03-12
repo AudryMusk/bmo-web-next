@@ -187,7 +187,93 @@ export async function submitContactFormAction(_prevState, formData) {
 </html>`,
     })
   } catch (error) {
-    console.error('Erreur envoi email:', error)
+    console.error('Erreur envoi email admin:', error)
+  }
+
+  try {
+    await transporter.sendMail({
+      from: `"B-MO (Noreply)" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `Nous avons bien reçu votre message — B-MO`,
+      html: `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmation — B-MO</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F2F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+  <div style="display:none;font-size:1px;color:#F0F2F5;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+    Merci ${firstname}, votre message a bien été reçu. Nous vous répondrons très prochainement.
+  </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F0F2F5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="border-radius:16px 16px 0 0;background:linear-gradient(135deg,#D91F2B 0%,#E8500A 100%);padding:44px 48px 36px;text-align:center;">
+            <a href="https://www.bmo.bj" target="_blank" style="text-decoration:none;">
+              <img src="https://www.bmo.bj/bmo-logo.png" alt="BestCash Money" width="168" style="display:block;margin:0 auto 24px;max-width:168px;" />
+            </a>
+            <h1 style="margin:0 0 8px;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:-0.6px;">Message bien reçu !</h1>
+            <p style="margin:0;color:rgba(255,255,255,0.88);font-size:15px;">Nous vous répondrons dans les plus brefs délais.</p>
+          </td>
+        </tr>
+
+        <!-- CONTENU -->
+        <tr>
+          <td style="background:#ffffff;padding:48px 48px 52px;">
+
+            <p style="margin:0 0 24px;color:#111827;font-size:18px;font-weight:700;">Bonjour ${firstname},</p>
+
+            <p style="margin:0 0 32px;color:#4B5563;font-size:15px;line-height:1.7;">
+              Merci de nous avoir contactés. Votre message a bien été reçu par notre équipe et nous vous répondrons dans les meilleurs délais.
+            </p>
+
+            <!-- Récap du message -->
+            <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-left:5px solid #D91F2B;border-radius:0 12px 12px 0;padding:24px 26px;margin-bottom:40px;">
+              <p style="margin:0 0 6px;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">Votre message</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#9CA3AF;"><strong style="color:#374151;">Sujet :</strong> ${subject}</p>
+              <p style="margin:0;font-size:14.5px;color:#374151;line-height:1.7;white-space:pre-wrap;word-break:break-word;">${message}</p>
+            </div>
+
+            <!-- CTA vers le site -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center">
+                  <a href="https://www.bmo.bj"
+                     style="display:inline-block;background:linear-gradient(135deg,#D91F2B,#E8500A);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:16px 44px;border-radius:999px;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(217,31,43,0.22);">
+                    Visiter bmo.bj
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="background:#111827;border-radius:0 0 16px 16px;padding:32px 48px;text-align:center;">
+            <p style="margin:0 0 8px;color:#ffffff;font-size:14px;font-weight:600;">BESTCASH MONEY · B-MO</p>
+            <p style="margin:0;color:rgba(255,255,255,0.50);font-size:12px;line-height:1.5;">
+              © ${new Date().getFullYear()} — Cet email est une confirmation automatique, merci de ne pas y répondre.<br/>
+              +229 0160 60 87 88 &nbsp;·&nbsp; info@bestcash.me &nbsp;·&nbsp; bmo.bj
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+    })
+  } catch (error) {
+    console.error('Erreur envoi email confirmation:', error)
   }
 
   return { success: true }

@@ -5,19 +5,58 @@ import { submitContactFormAction } from '@/actions/contact'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Send, CheckCircle } from 'lucide-react'
+import { Send, CheckCircle, Mail, Phone, MessageCircle } from 'lucide-react'
+import Link from 'next/link'
+
+type FormState = {
+  success?: boolean
+  error?: string
+  fieldErrors?: Record<string, string[]>
+} | null
 
 export default function ContactFormClient() {
-  const [state, action, pending] = useActionState(submitContactFormAction, null)
+  const [state, action, pending] = useActionState(submitContactFormAction, null) as [FormState, typeof submitContactFormAction, boolean]
 
   if (state?.success) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-        <CheckCircle className="w-14 h-14 text-green-500" />
-        <h3 className="text-xl font-bold text-foreground">Message envoyé !</h3>
-        <p className="text-muted-foreground text-sm max-w-xs">
-          Merci, nous avons bien reçu votre message et vous répondrons dans les plus brefs délais.
-        </p>
+      <div className="flex flex-col items-center justify-center gap-6 py-10 text-center">
+        {/* Icône animée */}
+        <div className="relative flex items-center justify-center">
+          <div className="absolute w-20 h-20 rounded-full bg-green-100 animate-ping opacity-30" />
+          <div className="w-20 h-20 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center">
+            <CheckCircle className="w-10 h-10 text-green-500" />
+          </div>
+        </div>
+
+        {/* Texte principal */}
+        <div className="space-y-2">
+          <h3 className="text-2xl font-bold text-foreground">Message envoyé !</h3>
+          <p className="text-muted-foreground text-sm max-w-sm leading-relaxed">
+            Merci pour votre message. Notre équipe vous répondra dans les meilleurs délais.
+            Un email de confirmation vous a été envoyé.
+          </p>
+        </div>
+
+        {/* Séparateur */}
+        <div className="w-12 h-px bg-border" />
+
+        {/* Actions rapides */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+          <Link
+            href="tel:+22901606087888"
+            className="flex items-center justify-center gap-2 flex-1 border border-border rounded-xl px-4 py-3 text-sm font-medium hover:bg-secondary/50 transition-colors"
+          >
+            <Phone className="w-4 h-4 text-primary" />
+            Nous appeler
+          </Link>
+          <Link
+            href="/blog"
+            className="flex items-center justify-center gap-2 flex-1 gradient-primary text-white rounded-xl px-4 py-3 text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Voir nos articles
+          </Link>
+        </div>
       </div>
     )
   }
