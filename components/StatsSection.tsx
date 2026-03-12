@@ -55,7 +55,7 @@ const StatsSection = () => {
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <span className="text-primary-foreground font-bold text-xl">
                   BCEAO
                 </span>
@@ -65,7 +65,7 @@ const StatsSection = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 gradient-blue rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-20 h-20 border-primary border-2 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <span className="text-accent-foreground font-bold text-xl">
                   APDP
                 </span>
@@ -75,7 +75,7 @@ const StatsSection = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-20 h-20  gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <span className="text-primary-foreground font-bold text-xl">
                   ARCEP
                 </span>
@@ -85,7 +85,7 @@ const StatsSection = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 gradient-blue rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-20 h-20  border-primary border-2 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <span className="text-accent-foreground font-bold text-xl">
                   DGSF
                 </span>

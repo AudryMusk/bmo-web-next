@@ -9,14 +9,11 @@ import {
   Mail,
   Phone,
   MapPin,
-  Send,
   Smartphone,
   Monitor,
   Globe,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import ContactFormClient from "@/components/ContactFormClient";
 
 export default function Contact() {
   return (
@@ -147,53 +144,7 @@ export default function Contact() {
                 Envoyez-nous un message
               </h2>
 
-              <form className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Nom</label>
-                    <Input placeholder="Votre nom" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Prénom
-                    </label>
-                    <Input placeholder="Votre prénom" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Email</label>
-                  <Input type="email" placeholder="votre@email.com" />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Téléphone
-                  </label>
-                  <Input type="tel" placeholder="+229 XX XX XX XX" />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Sujet</label>
-                  <Input placeholder="Objet de votre message" />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Message
-                  </label>
-                  <Textarea placeholder="Votre message..." rows={5} />
-                </div>
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full gradient-primary text-primary-foreground"
-                >
-                  Envoyer le message
-                  <Send className="ml-2 w-4 h-4" />
-                </Button>
-              </form>
+              <ContactFormClient />
             </div>
           </div>
         </div>

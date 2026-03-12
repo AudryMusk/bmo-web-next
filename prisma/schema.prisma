@@ -164,3 +164,14 @@ model Partner {
   address     String?
   order       Int     @default(0)
 }
+
+model ContactForm {
+  id        String   @id @default(cuid())
+  firstname String
+  lastname  String
+  email     String
+  telephone String
+  subject   String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}

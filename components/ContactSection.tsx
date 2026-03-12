@@ -1,7 +1,5 @@
 import { Mail, Phone, MapPin, Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import ContactFormClient from "@/components/ContactFormClient";
 
 const ContactSection = () => {
   return (
@@ -36,8 +34,8 @@ const ContactSection = () => {
                 {
                   icon: Phone,
                   label: "Téléphone",
-                  value: "+229 01 60 60 87 88",
-                  secondary: "+229 01 97 84 04 04",
+                  value: "+229 0160608788",
+                  secondary: "+229 0154102179",
                 },
                 {
                   icon: Mail,
@@ -99,65 +97,7 @@ const ContactSection = () => {
             <h3 className="text-xl font-bold text-foreground mb-6">
               Envoyez-nous un message
             </h3>
-            <form className="space-y-6">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-foreground text-sm font-medium mb-2 block">
-                    Prénom
-                  </label>
-                  <Input
-                    placeholder="Jean"
-                    className="bg-secondary/50 border-border focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="text-foreground text-sm font-medium mb-2 block">
-                    Nom
-                  </label>
-                  <Input
-                    placeholder="Dupont"
-                    className="bg-secondary/50 border-border focus:border-primary"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-foreground text-sm font-medium mb-2 block">
-                  Téléphone
-                </label>
-                <Input
-                  type="tel"
-                  placeholder="+229 XX XX XX XX"
-                  className="bg-secondary/50 border-border focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="text-foreground text-sm font-medium mb-2 block">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="jean@exemple.com"
-                  className="bg-secondary/50 border-border focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="text-foreground text-sm font-medium mb-2 block">
-                  Message
-                </label>
-                <Textarea
-                  placeholder="Comment pouvons-nous vous aider ?"
-                  rows={5}
-                  className="bg-secondary/50 border-border focus:border-primary resize-none"
-                />
-              </div>
-
-              <Button className="w-full gradient-primary text-primary-foreground hover:opacity-90">
-                Envoyer le Message
-              </Button>
-            </form>
+            <ContactFormClient />
           </div>
         </div>
       </div>
