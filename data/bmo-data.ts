@@ -11,7 +11,7 @@ export const companyInfo = {
   ifu: "3201710041944",
   ussd: "*890#",
   phone: "+229 0160 60 87 88",
-  altPhones: ["+229 0197840404", "+229 0196042827"],
+  altPhones: ["+229 0154102179", "+229 0196042827"],
   email: "info@bestcash.me",
   websites: ["https://www.bmo.bj", "https://www.bestcash.me"],
   address: "Fidjrossè, route des pêches, à 300 mètres après la direction GOZEM en quittant Fidjrossè fin pavé, Cotonou - Bénin",
