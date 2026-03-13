@@ -15,6 +15,7 @@ import { useWithLoading } from '@/context/LoadingContext'
 
 function LogoUpload({ currentLogo }) {
   const [preview, setPreview] = useState(currentLogo ?? null)
+  const [removed, setRemoved] = useState(false)
   const inputRef = useRef(null)
 
   return (
@@ -41,7 +42,7 @@ function LogoUpload({ currentLogo }) {
           {preview && (
             <button
               type="button"
-              onClick={() => { setPreview(null); if (inputRef.current) inputRef.current.value = '' }}
+              onClick={() => { setPreview(null); if (inputRef.current) inputRef.current.value = ''; setRemoved(true) }}
               className="text-xs text-red-500 hover:underline cursor-pointer bg-transparent border-none text-left"
             >
               Supprimer
@@ -58,9 +59,11 @@ function LogoUpload({ currentLogo }) {
         className="hidden"
         onChange={e => {
           const file = e.target.files?.[0]
-          if (file) setPreview(URL.createObjectURL(file))
+          if (file) { setPreview(URL.createObjectURL(file)); setRemoved(false) }
         }}
       />
+      {/* Hidden field to indicate removal of existing logo */}
+      <input type="hidden" name="removeLogo" value={removed ? '1' : ''} />
     </div>
   )
 }
@@ -300,6 +303,7 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
                 const fd = new FormData()
                 fd.set('id', id)
                 await withLoading(() => deleteAction(fd))
+                setDeleteTarget(null)
                 router.refresh()
               }}
             >

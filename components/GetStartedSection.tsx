@@ -1,4 +1,5 @@
 import { UserPlus, Smartphone, Wallet } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const stepsUSSD = [
@@ -106,12 +107,15 @@ const GetStartedSection = () => {
             </div>
 
             <Button
+              asChild
               size="lg"
               variant="outline"
               className="mt-8 border-primary text-primary hover:bg-primary/10 font-bold"
             >
-              <Smartphone className="mr-2 w-5 h-5" />
-              Composez *890#
+              <Link href="tel:*890%23">
+                <Smartphone className="mr-2 w-5 h-5" />
+                Composez *890#
+              </Link>
             </Button>
           </div>
 
@@ -154,10 +158,11 @@ const GetStartedSection = () => {
             </div>
 
             <Button
+              asChild
               size="lg"
               className="mt-8 gradient-primary text-primary-foreground hover:opacity-90"
             >
-              Télécharger sur Play Store
+              <Link href="/telechargement">Télécharger sur Play Store</Link>
             </Button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use server'
 
-import { writeFile, mkdir } from 'fs/promises'
+import { writeFile, mkdir, unlink } from 'fs/promises'
 import { join } from 'path'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
@@ -15,12 +15,27 @@ async function saveLogo(file) {
   return `/uploads/${filename}`
 }
 
+async function deleteLogoFile(logoPath) {
+  if (!logoPath || typeof logoPath !== 'string') return
+  if (!logoPath.startsWith('/uploads/')) return
+  const filePath = join(process.cwd(), 'public', logoPath)
+  try {
+    await unlink(filePath)
+  } catch {
+    // ignore missing file
+  }
+}
+
 // ─── Microfinances ────────────────────────────────────────────────────────────
 
 export async function createMicrofinanceAction(_prevState, formData) {
   const name     = formData.get('name')?.trim()
   const agencies = parseInt(formData.get('agencies'), 10)
-  const logo     = await saveLogo(formData.get('logo'))
+  // allow passing an existing logo URL when recreating (logoUrl)
+  const newLogoFile = formData.get('logo')
+  const logoFromUrl = formData.get('logoUrl')
+  const savedLogo = await saveLogo(newLogoFile)
+  const logo     = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
@@ -37,21 +52,27 @@ export async function updateMicrofinanceAction(_prevState, formData) {
   const name     = formData.get('name')?.trim()
   const agencies = parseInt(formData.get('agencies'), 10)
   const newLogo  = await saveLogo(formData.get('logo'))
+  const remove   = formData.get('removeLogo')
   const existing = await prisma.microfinance.findUnique({ where: { id }, select: { logo: true } })
-  const logo     = newLogo ?? existing?.logo ?? null
+  const logo     = remove ? null : (newLogo ?? existing?.logo ?? null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   if (isNaN(agencies)) return { error: "Nombre d'agences invalide." }
   await prisma.microfinance.update({ where: { id }, data: { name, agencies, logo, lat, lng, address } })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
+    await deleteLogoFile(existing.logo)
+  }
   revalidatePath('/admin/reseau/microfinances')
   return { success: true }
 }
 
 export async function deleteMicrofinanceAction(formData) {
   const id = formData.get('id')
+  const existing = await prisma.microfinance.findUnique({ where: { id }, select: { logo: true } })
   await prisma.microfinance.delete({ where: { id } })
+  if (existing?.logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/microfinances')
 }
 
@@ -61,7 +82,10 @@ export async function createDistributorAction(_prevState, formData) {
   const name     = formData.get('name')?.trim()
   const location = formData.get('location')?.trim()
   const phone    = formData.get('phone')?.trim() || ''
-  const logo     = await saveLogo(formData.get('logo'))
+  const newLogoFile = formData.get('logo')
+  const logoFromUrl = formData.get('logoUrl')
+  const savedLogo = await saveLogo(newLogoFile)
+  const logo     = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
@@ -79,21 +103,27 @@ export async function updateDistributorAction(_prevState, formData) {
   const location = formData.get('location')?.trim()
   const phone    = formData.get('phone')?.trim() || ''
   const newLogo  = await saveLogo(formData.get('logo'))
+  const remove   = formData.get('removeLogo')
   const existing = await prisma.distributor.findUnique({ where: { id }, select: { logo: true } })
-  const logo     = newLogo ?? existing?.logo ?? null
+  const logo     = remove ? null : (newLogo ?? existing?.logo ?? null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   if (!location) return { error: 'La localisation est requise.' }
   await prisma.distributor.update({ where: { id }, data: { name, location, phone, logo, lat, lng, address } })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
+    await deleteLogoFile(existing.logo)
+  }
   revalidatePath('/admin/reseau/distributeurs')
   return { success: true }
 }
 
 export async function deleteDistributorAction(formData) {
   const id = formData.get('id')
+  const existing = await prisma.distributor.findUnique({ where: { id }, select: { logo: true } })
   await prisma.distributor.delete({ where: { id } })
+  if (existing?.logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/distributeurs')
 }
 
@@ -118,7 +148,10 @@ async function reverseGeocode(lat, lng) {
 export async function createGabAction(_prevState, formData) {
   const city     = formData.get('city')?.trim()
   const location = formData.get('location')?.trim()
-  const logo     = await saveLogo(formData.get('logo'))
+  const newLogoFile = formData.get('logo')
+  const logoFromUrl = formData.get('logoUrl')
+  const savedLogo = await saveLogo(newLogoFile)
+  const logo     = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
@@ -135,21 +168,27 @@ export async function updateGabAction(_prevState, formData) {
   const city     = formData.get('city')?.trim()
   const location = formData.get('location')?.trim()
   const newLogo  = await saveLogo(formData.get('logo'))
+  const remove   = formData.get('removeLogo')
   const existing = await prisma.gabAtm.findUnique({ where: { id }, select: { logo: true } })
-  const logo     = newLogo ?? existing?.logo ?? null
+  const logo     = remove ? null : (newLogo ?? existing?.logo ?? null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
 
   if (!city || !location) return { error: 'Ville et localisation requises.' }
   await prisma.gabAtm.update({ where: { id }, data: { city, location, logo, lat, lng, address } })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
+    await deleteLogoFile(existing.logo)
+  }
   revalidatePath('/admin/reseau/gab')
   return { success: true }
 }
 
 export async function deleteGabAction(formData) {
   const id = formData.get('id')
+  const existing = await prisma.gabAtm.findUnique({ where: { id }, select: { logo: true } })
   await prisma.gabAtm.delete({ where: { id } })
+  if (existing?.logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/gab')
 }
 
@@ -159,7 +198,10 @@ export async function createPartnerAction(_prevState, formData) {
   const name        = formData.get('name')?.trim()
   const category    = formData.get('category')?.trim() || ''
   const description = formData.get('description')?.trim() || ''
-  const logo        = await saveLogo(formData.get('logo'))
+  const newLogoFile = formData.get('logo')
+  const logoFromUrl = formData.get('logoUrl')
+  const savedLogo = await saveLogo(newLogoFile)
+  const logo        = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
   const lat         = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng         = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address     = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
@@ -176,19 +218,25 @@ export async function updatePartnerAction(_prevState, formData) {
   const category    = formData.get('category')?.trim() || ''
   const description = formData.get('description')?.trim() || ''
   const newLogo     = await saveLogo(formData.get('logo'))
+  const remove      = formData.get('removeLogo')
   const existing    = await prisma.partner.findUnique({ where: { id }, select: { logo: true } })
-  const logo        = newLogo ?? existing?.logo ?? null
+  const logo        = remove ? null : (newLogo ?? existing?.logo ?? null)
   const lat         = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng         = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address     = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
   await prisma.partner.update({ where: { id }, data: { name, category, description, logo, lat, lng, address } })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
+    await deleteLogoFile(existing.logo)
+  }
   revalidatePath('/admin/reseau/partenaires')
   return { success: true }
 }
 
 export async function deletePartnerAction(formData) {
   const id = formData.get('id')
+  const existing = await prisma.partner.findUnique({ where: { id }, select: { logo: true } })
   await prisma.partner.delete({ where: { id } })
+  if (existing?.logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/partenaires')
 }

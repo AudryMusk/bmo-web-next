@@ -79,7 +79,7 @@ export default function ContactFormClient() {
         </div>
         <div>
           <label className="text-sm font-medium mb-2 block">Nom</label>
-          <Input name="lastname" placeholder="Dupont" className="bg-secondary/50 border-border focus:border-primary" />
+          <Input name="lastname" placeholder="Assogba" className="bg-secondary/50 border-border focus:border-primary" />
           {state?.fieldErrors?.lastname && (
             <p className="text-xs text-red-500 mt-1">{state.fieldErrors.lastname[0]}</p>
           )}

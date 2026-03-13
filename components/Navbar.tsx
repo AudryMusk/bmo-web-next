@@ -149,10 +149,13 @@ const Navbar = () => {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-4">
             <ThemeToggle />
-            <div className="flex items-center gap-2 text-primary font-bold">
+            <Link
+              href="tel:*890%23"
+              className="flex items-center gap-2 text-primary font-bold hover:text-primary/80 transition-colors"
+            >
               <Phone className="w-5 h-5" />
               <span className="text-xl">*890#</span>
-            </div>
+            </Link>
             <DownloadAppBtn />
           </div>
 
@@ -213,13 +216,15 @@ const Navbar = () => {
                 )
               )}
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-primary font-bold">
+                <Link
+                  href="tel:*890%23"
+                  className="flex items-center gap-2 text-primary font-bold"
+                  onClick={() => setIsOpen(false)}
+                >
                   <Phone className="w-4 h-4" />
                   <span>Composez *890#</span>
-                </div>
-                <Button className="gradient-primary text-primary-foreground">
-                  {"Télécharger l'App"}
-                </Button>
+                </Link>
+                <DownloadAppBtn />
               </div>
             </div>
           </div>

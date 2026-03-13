@@ -4,12 +4,22 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
 
 const faqs = [
   {
     question: "Comment créer un compte B-MO ?",
-    answer:
-      "Vous pouvez créer un compte en tapant *890# sur votre téléphone et en suivant les instructions, ou en téléchargeant l'application BESTCASH sur Play Store. L'inscription prend quelques minutes et vous recevrez votre code PIN par SMS.",
+    answer: (
+      <>
+        Vous pouvez créer un compte en tapant{" "}
+        <Link href="tel:*890%23" className="text-primary hover:underline">
+          *890#
+        </Link>{" "}
+        sur votre téléphone et en suivant les instructions, ou en téléchargeant
+        l&apos;application BESTCASH sur Play Store. L&apos;inscription prend
+        quelques minutes et vous recevrez votre code PIN par SMS.
+      </>
+    ),
   },
   {
     question: "Quels sont les opérateurs compatibles avec B-MO ?",
@@ -18,8 +28,17 @@ const faqs = [
   },
   {
     question: "Comment retirer de l'argent avec B-MO ?",
-    answer:
-      "Vous pouvez retirer aux guichets automatiques UBA partout au Bénin. Via l'app ou le code USSD *890#, générez un code ATM à 6 chiffres, puis rendez-vous au GAB, choisissez 'Retrait mobile money' et entrez le code.",
+    answer: (
+      <>
+        Vous pouvez retirer aux guichets automatiques UBA partout au Bénin. Via
+        l&apos;app ou le code USSD{" "}
+        <Link href="tel:*890%23" className="text-primary hover:underline">
+          *890#
+        </Link>
+        , générez un code ATM à 6 chiffres, puis rendez-vous au GAB, choisissez
+        &quot;Retrait mobile money&quot; et entrez le code.
+      </>
+    ),
   },
   {
     question: "Puis-je payer mes factures SBEE avec B-MO ?",

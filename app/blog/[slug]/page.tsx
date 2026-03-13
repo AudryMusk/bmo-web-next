@@ -137,7 +137,12 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
             <div className="mt-12 p-6 rounded-2xl bg-primary/5 border border-primary/15 flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex-1">
                 <p className="font-bold text-foreground mb-1">Découvrez B-MO</p>
-                <p className="text-sm text-muted-foreground">Paiement digital simple, rapide et sécurisé au Bénin · *890#</p>
+                <p className="text-sm text-muted-foreground">
+                  Paiement digital simple, rapide et sécurisé au Bénin ·{" "}
+                  <Link href="tel:*890%23" className="text-primary hover:underline">
+                    *890#
+                  </Link>
+                </p>
               </div>
               <a
                 href="https://www.bmo.bj"

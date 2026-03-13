@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Mail, Phone, MapPin, Globe } from "lucide-react";
 import ContactFormClient from "@/components/ContactFormClient";
 
@@ -34,26 +35,34 @@ const ContactSection = () => {
                 {
                   icon: Phone,
                   label: "Téléphone",
-                  value: "+229 0160608788",
-                  secondary: "+229 0154102179",
+                  value: "+229 01 60 60 87 88",
+                  href: "tel:+2290160608788",
+                  secondary: "+229 01 54 10 21 79",
+                  secondaryHref: "tel:+2290154102179",
                 },
                 {
                   icon: Mail,
                   label: "Email",
                   value: "info@bestcash.me",
+                  href: "mailto:info@bestcash.me",
                   secondary: null,
+                  secondaryHref: null,
                 },
                 {
                   icon: Globe,
                   label: "Sites Web",
                   value: "www.bmo.bj",
+                  href: "https://www.bmo.bj",
                   secondary: "www.bestcash.me",
+                  secondaryHref: "https://www.bestcash.me",
                 },
                 {
                   icon: MapPin,
                   label: "Siège",
                   value: "Fidjrossè, route des pêches",
+                  href: null,
                   secondary: "Cotonou - Bénin",
+                  secondaryHref: null,
                 },
               ].map((contact, index) => (
                 <div
@@ -68,13 +77,35 @@ const ContactSection = () => {
                     <p className="text-muted-foreground text-sm">
                       {contact.label}
                     </p>
-                    <p className="text-foreground font-medium">
-                      {contact.value}
-                    </p>
-                    {contact.secondary && (
+                    {contact.href ? (
+                      <Link
+                        href={contact.href}
+                        className="text-foreground font-medium hover:text-primary transition-colors block"
+                        target={contact.href.startsWith("http") ? "_blank" : undefined}
+                        rel={contact.href.startsWith("http") ? "noreferrer" : undefined}
+                      >
+                        {contact.value}
+                      </Link>
+                    ) : (
                       <p className="text-foreground font-medium">
-                        {contact.secondary}
+                        {contact.value}
                       </p>
+                    )}
+                    {contact.secondary && (
+                      contact.secondaryHref ? (
+                        <Link
+                          href={contact.secondaryHref}
+                          className="text-foreground font-medium hover:text-primary transition-colors block"
+                          target={contact.secondaryHref.startsWith("http") ? "_blank" : undefined}
+                          rel={contact.secondaryHref.startsWith("http") ? "noreferrer" : undefined}
+                        >
+                          {contact.secondary}
+                        </Link>
+                      ) : (
+                        <p className="text-foreground font-medium">
+                          {contact.secondary}
+                        </p>
+                      )
                     )}
                   </div>
                 </div>

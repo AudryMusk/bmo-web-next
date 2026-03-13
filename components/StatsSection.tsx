@@ -81,7 +81,11 @@ const StatsSection = () => {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Code USSD *890# approuvé
+                Code USSD{" "}
+                <Link href="tel:*890%23" className="text-primary hover:underline">
+                  *890#
+                </Link>{" "}
+                approuvé
               </p>
             </div>
             <div className="text-center">

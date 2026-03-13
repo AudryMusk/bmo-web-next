@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getServicesParticuliers } from "@/lib/db";
+import Link from "next/link";
 import {
   ArrowLeftRight,
   Receipt,
@@ -107,7 +108,12 @@ export default async function ServicesParticuliers() {
                         <div className="flex items-center gap-2 mb-3">
                           <Smartphone className="w-4 h-4 text-primary" />
                           <h4 className="font-semibold text-sm">
-                            Via USSD *890#
+                            <Link
+                              href="tel:*890%23"
+                              className="hover:text-primary/80 transition-colors"
+                            >
+                              Via USSD *890#
+                            </Link>
                           </h4>
                         </div>
                         <ol className="space-y-1">
@@ -214,19 +220,25 @@ export default async function ServicesParticuliers() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
+                asChild
                 size="lg"
                 className="gradient-primary text-primary-foreground"
               >
-                Télécharger l&apos;App
-                <ArrowRight className="ml-2 w-4 h-4" />
+                <Link href="/telechargement">
+                  Télécharger l&apos;App
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
               </Button>
               <Button
+                asChild
                 size="lg"
                 variant="outline"
                 className="border-primary text-primary"
               >
-                <Smartphone className="mr-2 w-5 h-5" />
-                Tapez *890#
+                <Link href="tel:*890%23">
+                  <Smartphone className="mr-2 w-5 h-5" />
+                  Tapez *890#
+                </Link>
               </Button>
             </div>
           </div>

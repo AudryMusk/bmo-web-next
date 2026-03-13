@@ -5,7 +5,16 @@ import Link from "next/link";
 import { ArrowRight, Calendar, Clock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type BlogPost = { id: string; slug: string; title: string; excerpt: string; category: string; date: string; readTime: string }
+type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  date: string;
+  readTime: string;
+  image?: string;
+};
 
 const LatestNewsSection = ({ posts }: { posts: BlogPost[] }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -70,13 +79,22 @@ const LatestNewsSection = ({ posts }: { posts: BlogPost[] }) => {
                 <div className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full flex flex-col">
                   {/* Image */}
                   <div className="relative h-48 bg-gradient-to-br from-primary/20 to-accent/20 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                        <span className="text-primary-foreground font-bold text-2xl">
-                          B
-                        </span>
+                    {post.image ? (
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          <span className="text-primary-foreground font-bold text-2xl">
+                            B
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <span className="absolute top-4 left-4 px-3 py-1 bg-accent/90 text-accent-foreground text-xs font-medium rounded-full">
                       {post.category}
                     </span>

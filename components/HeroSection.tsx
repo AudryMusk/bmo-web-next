@@ -1,4 +1,5 @@
 import { Smartphone, Shield } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import DownloadAppBtn from "./DownloadAppBtn";
 
@@ -32,12 +33,15 @@ const HeroSection = () => {
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-fade-in-up delay-300">
               <DownloadAppBtn />
               <Button
+                asChild
                 size="lg"
                 variant="outline"
                 className="border-primary text-primary hover:bg-primary/10 group font-bold"
               >
-                <Smartphone className="mr-2 w-5 h-5" />
-                Tapez *890#
+                <Link href="tel:*890%23">
+                  <Smartphone className="mr-2 w-5 h-5" />
+                  Tapez *890#
+                </Link>
               </Button>
             </div>
 
