@@ -55,6 +55,13 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      backgroundImage: {
+        "gradient-primary": "linear-gradient(135deg, hsl(0 85% 50%), hsl(40 95% 50%))",
+        "gradient-blue": "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
+        "gradient-mixed": "linear-gradient(135deg, #b91c1c 0%, #f59e0b 100%)",
+        "gradient-red": "linear-gradient(135deg, hsl(0 85% 50%), hsl(0 70% 40%))",
+        "gradient-gold": "linear-gradient(135deg, hsl(40 95% 50%), hsl(35 90% 55%))",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
