@@ -91,28 +91,28 @@ export default async function Reseau() {
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 h-auto p-2 bg-muted/50 rounded-2xl mb-8">
               <TabsTrigger
                 value="microfinances"
-                className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground rounded-xl py-3 transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
               >
                 <Building2 className="w-4 h-4 mr-2" />
                 Microfinances
               </TabsTrigger>
               <TabsTrigger
                 value="distributeurs"
-                className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground rounded-xl py-3 transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
               >
                 <Store className="w-4 h-4 mr-2" />
                 Distributeurs
               </TabsTrigger>
               <TabsTrigger
                 value="gab"
-                className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground rounded-xl py-3 transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
                 GAB UBA
               </TabsTrigger>
               <TabsTrigger
                 value="partenaires"
-                className="data-[state=active]:bg-gradient-mixed data-[state=active]:text-primary-foreground rounded-xl py-3 transition-all duration-300"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
               >
                 <Handshake className="w-4 h-4 mr-2" />
                 Partenaires
@@ -138,16 +138,8 @@ export default async function Reseau() {
                       key={index}
                       className="bg-muted/50 rounded-2xl p-6 text-center hover:bg-muted transition-colors"
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 overflow-hidden shrink-0 ${!mf.logo ? 'bg-gradient-primary shadow-sm' : ''}`}>
-                        {mf.logo ? (
-                          <img
-                            src={mf.logo}
-                            alt={mf.name}
-                            className="w-full h-full object-contain"
-                          />
-                        ) : (
-                          <Building2 className="w-7 h-7 text-white" />
-                        )}
+                      <div className="w-14 h-14 gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <Building2 className="w-7 h-7 text-primary-foreground" />
                       </div>
                       <h3 className="font-bold mb-1">{mf.name}</h3>
                       <p className="text-primary font-semibold">
@@ -179,16 +171,8 @@ export default async function Reseau() {
                   {distributeurs.map((dist, index) => (
                     <div key={index} className="bg-muted/50 rounded-2xl p-6">
                       <div className="flex items-start gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden ${!dist.logo ? 'bg-gradient-primary shadow-sm' : ''}`}>
-                          {dist.logo ? (
-                            <img
-                              src={dist.logo}
-                              alt={dist.name}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <Store className="w-6 h-6 text-white" />
-                          )}
+                        <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Store className="w-6 h-6 text-primary-foreground" />
                         </div>
                         <div className="flex-1">
                           <h3 className="font-bold mb-2">{dist.name}</h3>
@@ -234,10 +218,10 @@ export default async function Reseau() {
 
                     return (
                       <div key={index} className="bg-muted/50 rounded-2xl p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                          <CreditCard className="w-6 h-6 text-white" />
-                        </div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 gradient-blue rounded-xl flex items-center justify-center">
+                            <CreditCard className="w-5 h-5 text-primary-foreground" />
+                          </div>
                           <div>
                             <h3 className="font-bold">{formattedCity}</h3>
                             <p className="text-xs text-muted-foreground">
@@ -289,16 +273,8 @@ export default async function Reseau() {
                       className="bg-muted/50 rounded-2xl p-6 hover:bg-muted transition-colors"
                     >
                       <div className="flex items-start gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden ${!partner.logo ? 'bg-gradient-mixed shadow-sm' : ''}`}>
-                          {partner.logo ? (
-                            <img
-                              src={partner.logo}
-                              alt={partner.name}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <Handshake className="w-6 h-6 text-white" />
-                          )}
+                        <div className="w-12 h-12 gradient-mixed rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Handshake className="w-6 h-6 text-primary-foreground" />
                         </div>
                         <div>
                           <h3 className="font-bold mb-1">{partner.name}</h3>
