@@ -117,7 +117,7 @@ export default async function ServicesBusiness() {
           <div className="glass-card rounded-3xl p-8 lg:p-12 mb-12">
             <div className="grid lg:grid-cols-2 gap-12">
               <div>
-                <div className="w-16 h-16 gradient-blue rounded-2xl flex items-center justify-center mb-6">
+                <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6">
                   <Wallet className="w-8 h-8 text-primary-foreground" />
                 </div>
                 <h2 className="text-3xl font-bold mb-4">Collecte B-MO Pay</h2>

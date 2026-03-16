@@ -91,28 +91,28 @@ export default async function Reseau() {
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 h-auto p-2 bg-muted/50 rounded-2xl mb-8">
               <TabsTrigger
                 value="microfinances"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3 text-sm font-medium"
               >
                 <Building2 className="w-4 h-4 mr-2" />
                 Microfinances
               </TabsTrigger>
               <TabsTrigger
                 value="distributeurs"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3 text-sm font-medium"
               >
                 <Store className="w-4 h-4 mr-2" />
                 Distributeurs
               </TabsTrigger>
               <TabsTrigger
                 value="gab"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3 text-sm font-medium"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
                 GAB UBA
               </TabsTrigger>
               <TabsTrigger
                 value="partenaires"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3 text-sm font-medium"
               >
                 <Handshake className="w-4 h-4 mr-2" />
                 Partenaires
@@ -219,7 +219,7 @@ export default async function Reseau() {
                     return (
                       <div key={index} className="bg-muted/50 rounded-2xl p-6">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 gradient-blue rounded-xl flex items-center justify-center">
+                          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
                             <CreditCard className="w-5 h-5 text-primary-foreground" />
                           </div>
                           <div>
@@ -273,7 +273,7 @@ export default async function Reseau() {
                       className="bg-muted/50 rounded-2xl p-6 hover:bg-muted transition-colors"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 gradient-mixed rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
                           <Handshake className="w-6 h-6 text-primary-foreground" />
                         </div>
                         <div>
