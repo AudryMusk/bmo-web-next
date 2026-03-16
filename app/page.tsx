@@ -10,17 +10,12 @@ import LatestNewsSection from "@/components/LatestNewsSection";
 import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import { getBlogPosts, getMicrofinances, getDistributeurs, getPartenaires } from "@/lib/db";
+import { getBlogPosts } from "@/lib/db";
 
 export const revalidate = 60
 
 export default async function Index() {
-  const [posts, microfinances, distributeurs, partenaires] = await Promise.all([
-    getBlogPosts('publie'),
-    getMicrofinances(),
-    getDistributeurs(),
-    getPartenaires(),
-  ])
+  const posts = await getBlogPosts('publie')
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,11 +26,7 @@ export default async function Index() {
       <GetStartedSection />
       <CEOMessageSection />
       <PricingSection />
-      <PartnersSection
-        microfinances={microfinances}
-        distributeurs={distributeurs}
-        partenaires={partenaires}
-      />
+      <PartnersSection />
       <LatestNewsSection posts={posts} />
       <FAQSection />
       <ContactSection />

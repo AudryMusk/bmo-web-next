@@ -2,20 +2,52 @@ import { Building, MapPin, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-type Microfinance = { id: string; name: string; agencies: number; logo?: string | null };
-type Distributeur = { id: string; name: string; location: string; phone?: string | null; logo?: string | null };
-type Partenaire = { id: string; name: string; category: string; description?: string | null; logo?: string | null };
+const distributeurs = [
+  {
+    nom: "SAK-SERVICES",
+    localisation: "Godomey Togoudo, Allégléta, Womey",
+    tel: "01 97 70 73 73",
+  },
+  {
+    nom: "RÈGNE DE L'ÉTERNEL",
+    localisation: "Porto-Novo",
+    tel: "01 97 33 95 23",
+  },
+  {
+    nom: "NETSHOP",
+    localisation: "Iita Tankpê, Parana, Ganvié",
+    tel: "01 96 73 92 72",
+  },
+  {
+    nom: "ALAKHBAAR SERVICE",
+    localisation: "1er-4ième arrondissement",
+    tel: "01 97 97 02 91",
+  },
+];
 
-const PartnersSection = ({
-  microfinances,
-  distributeurs,
-  partenaires,
-}: {
-  microfinances: Microfinance[];
-  distributeurs: Distributeur[];
-  partenaires: Partenaire[];
-}) => {
-  const totalAgences = microfinances.reduce((sum, mf) => sum + mf.agencies, 0);
+const microfinances = [
+  { nom: "AFRICA FINANCES", agences: 20 },
+  { nom: "COWEC", agences: 13 },
+  { nom: "COMUBA", agences: 28 },
+  { nom: "MDB", agences: 14 },
+  { nom: "SIAN'SON", agences: 30 },
+  { nom: "RENACA", agences: 39 },
+  { nom: "LE DÉFIS", agences: 14 },
+];
+
+const partenaires = [
+  "UBA",
+  "BCEAO",
+  "TerraPay",
+  "ONAFRIQ",
+  "Canal+",
+  "SBEE",
+  "CMA CGM",
+  "UNICEF",
+];
+
+const PartnersSection = () => {
+  const totalAgences = microfinances.reduce((sum, mf) => sum + mf.agences, 0);
 
   return (
     <section
@@ -56,25 +88,14 @@ const PartnersSection = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
             {microfinances.map((mf, index) => (
               <div
-                key={mf.id}
+                key={mf.nom}
                 className="glass-card rounded-xl p-4 text-center hover:border-primary/50 transition-all duration-300 animate-fade-in-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="w-12 h-12 rounded-lg gradient-primary mx-auto mb-2 flex items-center justify-center overflow-hidden">
-                  {mf.logo ? (
-                    <img
-                      src={mf.logo}
-                      alt={mf.name}
-                      className="w-full h-full object-contain p-2"
-                    />
-                  ) : (
-                    <Building className="w-5 h-5 text-primary-foreground" />
-                  )}
-                </div>
                 <p className="text-foreground font-semibold text-sm mb-1">
-                  {mf.name}
+                  {mf.nom}
                 </p>
-                <p className="text-primary font-bold text-lg">{mf.agencies}</p>
+                <p className="text-primary font-bold text-lg">{mf.agences}</p>
                 <p className="text-muted-foreground text-xs">agences</p>
               </div>
             ))}
@@ -93,35 +114,18 @@ const PartnersSection = ({
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {distributeurs.map((dist, index) => (
               <div
-                key={dist.id}
+                key={dist.nom}
                 className="glass-card rounded-xl p-5 hover:border-primary/50 transition-all duration-300 animate-fade-in-up"
                 style={{ animationDelay: `${index * 75}ms` }}
               >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center overflow-hidden">
-                    {dist.logo ? (
-                      <img
-                        src={dist.logo}
-                        alt={dist.name}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <Users className="w-4 h-4 text-primary-foreground" />
-                    )}
-                  </div>
-                  <h4 className="text-foreground font-semibold">
-                    {dist.name}
-                  </h4>
-                </div>
+                <h4 className="text-foreground font-semibold mb-2">
+                  {dist.nom}
+                </h4>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
-                  <span>{dist.location}</span>
+                  <span>{dist.localisation}</span>
                 </div>
-                {dist.phone && (
-                  <p className="text-primary font-medium text-sm">
-                    {dist.phone}
-                  </p>
-                )}
+                <p className="text-primary font-medium text-sm">{dist.tel}</p>
               </div>
             ))}
           </div>
@@ -135,24 +139,11 @@ const PartnersSection = ({
           <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-10">
             {partenaires.map((partner, index) => (
               <div
-                key={partner.id}
+                key={partner}
                 className="glass-card rounded-xl px-6 py-3 hover:border-primary/50 transition-all duration-300 animate-fade-in-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg gradient-mixed flex items-center justify-center overflow-hidden">
-                    {partner.logo ? (
-                      <img
-                        src={partner.logo}
-                        alt={partner.name}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <Users className="w-4 h-4 text-primary-foreground" />
-                    )}
-                  </div>
-                  <span className="text-foreground font-bold">{partner.name}</span>
-                </div>
+                <span className="text-foreground font-bold">{partner}</span>
               </div>
             ))}
           </div>
