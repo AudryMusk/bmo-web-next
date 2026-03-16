@@ -79,7 +79,7 @@ export default function About() {
 
             {/* Mission */}
             <div className="glass-card rounded-3xl p-8 lg:p-10">
-              <div className="w-16 h-16 gradient-blue rounded-2xl flex items-center justify-center mb-6">
+              <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6">
                 <Target className="w-8 h-8 text-primary-foreground" />
               </div>
               <h2 className="text-2xl font-bold mb-4">Notre Mission</h2>

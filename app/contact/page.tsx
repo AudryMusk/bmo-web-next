@@ -68,7 +68,7 @@ export default function Contact() {
 
                 <div className="glass-card rounded-2xl p-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 gradient-blue rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
                       <Mail className="w-6 h-6 text-primary-foreground" />
                     </div>
                     <div>
@@ -85,7 +85,7 @@ export default function Contact() {
 
                 <div className="glass-card rounded-2xl p-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 gradient-mixed rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
                       <Globe className="w-6 h-6 text-primary-foreground" />
                     </div>
                     <div>
@@ -190,7 +190,7 @@ export default function Contact() {
             {/* App Method */}
             <div className="glass-card rounded-3xl p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 gradient-blue rounded-2xl flex items-center justify-center">
+                <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center">
                   <Monitor className="w-7 h-7 text-primary-foreground" />
                 </div>
                 <div>
@@ -202,7 +202,7 @@ export default function Contact() {
               <ol className="space-y-3">
                 {inscriptionApp.steps.slice(0, 8).map((step, idx) => (
                   <li key={idx} className="flex items-start gap-3">
-                    <div className="w-7 h-7 gradient-blue rounded-full flex items-center justify-center flex-shrink-0 text-sm text-primary-foreground font-bold">
+                    <div className="w-7 h-7 gradient-primary rounded-full flex items-center justify-center flex-shrink-0 text-sm text-primary-foreground font-bold">
                       {idx + 1}
                     </div>
                     <span className="text-muted-foreground pt-1">{step}</span>
