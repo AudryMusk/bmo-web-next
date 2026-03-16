@@ -26,6 +26,7 @@ export async function updateTariffRowAction(_prevState, formData) {
   await prisma.tariffRow.update({ where: { id }, data })
 
   revalidatePath('/tarifs')
+  revalidatePath('/admin/tarifs')
   return { success: true }
 }
 
@@ -59,6 +60,7 @@ export async function createTariffRowAction(_prevState, formData) {
   })
 
   revalidatePath('/tarifs')
+  revalidatePath('/admin/tarifs')
   return { success: true }
 }
 
@@ -69,6 +71,7 @@ export async function deleteTariffRowAction(_prevState, formData) {
   await prisma.tariffRow.delete({ where: { id } })
 
   revalidatePath('/tarifs')
+  revalidatePath('/admin/tarifs')
   return { success: true }
 }
 
@@ -84,6 +87,7 @@ export async function updateTariffMetaAction(_prevState, formData) {
   const { id, title, note } = parsed.data
   await prisma.tariffMeta.update({ where: { id }, data: { title, note } })
   revalidatePath('/tarifs')
+  revalidatePath('/admin/tarifs')
   return { success: true }
 }
 
@@ -106,6 +110,7 @@ export async function createTariffMetaAction(_prevState, formData) {
   })
 
   revalidatePath('/tarifs')
+  revalidatePath('/admin/tarifs')
   return { success: true }
 }
 
@@ -116,6 +121,7 @@ export async function deleteTariffMetaAction(_prevState, formData) {
   await prisma.tariffMeta.delete({ where: { id } })
 
   revalidatePath('/tarifs')
+  revalidatePath('/admin/tarifs')
   return { success: true }
 }
 

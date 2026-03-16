@@ -2,10 +2,12 @@
 
 import { useActionState } from 'react'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Pencil, X, Check, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import SubmitButton from './SubmitButton'
 import InternationalCountriesManager from './InternationalCountriesManager'
+import { useLoading } from '@/context/LoadingContext'
 
 const FIXED_REGIONS = ['uemoa', 'senegal', 'cemac', 'mobile', 'international']
 
@@ -63,14 +65,28 @@ function TariffRowEdit({ row, updateRowAction, onCancel, onSaved }) {
 }
 
 function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }) {
+  const router = useRouter()
+  const { show, hide } = useLoading()
   const [editingId, setEditingId]   = useState(null)
   const [addingRow, setAddingRow]   = useState(false)
   const [confirmId, setConfirmId]   = useState(null)
   const [createState, createFormAction] = useActionState(createRowAction, null)
   const [deleteState, deleteFormAction] = useActionState(deleteRowAction, null)
 
-  useEffect(() => { if (createState?.success) setAddingRow(false) }, [createState])
-  useEffect(() => { if (deleteState?.success) setConfirmId(null)  }, [deleteState])
+  useEffect(() => {
+    if (createState?.success) {
+      setAddingRow(false)
+      hide()
+      router.refresh()
+    }
+  }, [createState, router, hide])
+  useEffect(() => { 
+    if (deleteState?.success) { 
+      setConfirmId(null)
+      hide()
+      router.refresh() 
+    }
+  }, [deleteState, router, hide])
 
   const rows = meta.rows ?? []
 
@@ -158,7 +174,7 @@ function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }
                       {deleteState?.error && <p className="text-xs text-red-600">{deleteState.error}</p>}
                       <div className="flex gap-2">
                         <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmId(null)} className="h-6 text-xs cursor-pointer px-2">Annuler</Button>
-                        <form action={deleteFormAction}>
+                        <form action={(formData) => { show(); deleteFormAction(formData) }}>
                           <input type="hidden" name="id" value={row.id} />
                           <SubmitButton loadingText="…" className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 h-6 rounded bg-red-600 hover:bg-red-700 text-white border-none cursor-pointer disabled:opacity-60">
                             <Trash2 size={11} /> Supprimer
@@ -209,7 +225,7 @@ function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }
       {addingRow ? (
         <div className="border border-primary/30 rounded-xl p-4 bg-tint">
           <p className="text-xs font-semibold text-slate-700 mb-3">Nouvelle ligne tarifaire</p>
-          <form action={createFormAction} className="flex flex-col gap-3">
+          <form action={(formData) => { show(); createFormAction(formData) }} className="flex flex-col gap-3">
             <input type="hidden" name="tariffMetaId" value={meta.id} />
             {createState?.error && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">{createState.error}</p>}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -224,7 +240,7 @@ function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }
               {textField('fraisAutresVersBmo', 'Autres→B-MO')}
             </div>
             <div className="flex gap-2 justify-end">
-              <Button type="button" variant="ghost" size="sm" onClick={() => setAddingRow(false)} className="gap-1 cursor-pointer">
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setAddingRow(false); hide() }} className="gap-1 cursor-pointer">
                 <X size={13} /> Annuler
               </Button>
               <SubmitButton loadingText="Ajout…" className="inline-flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-md bg-primary hover:bg-primary-hover text-white border-none cursor-pointer disabled:opacity-60">
@@ -244,8 +260,14 @@ function TariffTable({ meta, updateRowAction, createRowAction, deleteRowAction }
 
 /* ─── Formulaire nouvelle grille ─────────────────────────────────────────── */
 function CreateMetaForm({ createMetaAction, onCancel, onCreated }) {
+  const router = useRouter()
   const [state, formAction] = useActionState(createMetaAction, null)
-  useEffect(() => { if (state?.success) onCreated() }, [state])
+  useEffect(() => {
+    if (state?.success) {
+      onCreated()
+      router.refresh()
+    }
+  }, [state, router, onCreated])
 
   return (
     <div className="border border-primary/40 rounded-xl p-4 bg-tint">
@@ -294,6 +316,7 @@ function CreateMetaForm({ createMetaAction, onCancel, onCreated }) {
 }
 
 export default function TariffsManager({ tariffs, updateRowAction, createRowAction, deleteRowAction, createMetaAction, deleteMetaAction, countries, createCountryAction, updateCountryAction, deleteCountryAction }) {
+  const router = useRouter()
   const allMeta   = tariffs // array of { id, region, title, note, rows }
   const regions   = allMeta.map(t => ({ key: t.region, label: t.title || t.region }))
   const [activeTab, setActiveTab] = useState(regions[0]?.key ?? '')
@@ -301,7 +324,13 @@ export default function TariffsManager({ tariffs, updateRowAction, createRowActi
   const [confirmDeleteMeta, setConfirmDeleteMeta] = useState(false)
   const [deleteMetaState, deleteMetaFormAction]   = useActionState(deleteMetaAction, null)
 
-  useEffect(() => { if (deleteMetaState?.success) { setConfirmDeleteMeta(false); setActiveTab(regions[0]?.key ?? '') } }, [deleteMetaState])
+  useEffect(() => {
+    if (deleteMetaState?.success) {
+      setConfirmDeleteMeta(false)
+      setActiveTab(regions[0]?.key ?? '')
+      router.refresh()
+    }
+  }, [deleteMetaState, router, regions])
 
   const meta = allMeta.find(t => t.region === activeTab)
   const isFixed = FIXED_REGIONS.includes(activeTab)

@@ -66,7 +66,7 @@ const GetStartedSection = () => {
             <span className="gradient-text">quelques minutes</span>
           </h2>
         </div>
-
+OryStart
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Via USSD */}
           <div>
@@ -122,8 +122,8 @@ const GetStartedSection = () => {
           {/* Via App */}
           <div>
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 gradient-blue rounded-xl flex items-center justify-center">
-                <Wallet className="w-6 h-6 text-accent-foreground" />
+              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center">
+                <Wallet className="w-6 h-6 text-primary-foreground" />
               </div>
               <h3 className="text-2xl font-bold text-foreground">
                 Via Application
@@ -134,13 +134,13 @@ const GetStartedSection = () => {
               {stepsApp.map((step, index) => (
                 <div
                   key={step.title}
-                  className="glass-card rounded-2xl p-6 flex items-start gap-5 hover:border-accent/50 transition-all duration-300 animate-fade-in-up"
+                  className="glass-card rounded-2xl p-6 flex items-start gap-5 hover:border-primary/50 transition-all duration-300 animate-fade-in-up"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
                   <div className="flex-shrink-0">
-                    <div className="w-14 h-14 gradient-blue rounded-2xl flex items-center justify-center relative">
-                      <step.icon className="w-6 h-6 text-accent-foreground" />
-                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-background border border-accent rounded-full flex items-center justify-center text-xs font-bold text-accent">
+                    <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center relative">
+                      <step.icon className="w-6 h-6 text-primary-foreground" />
+                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-background border border-primary rounded-full flex items-center justify-center text-xs font-bold text-primary">
                         {step.number}
                       </span>
                     </div>

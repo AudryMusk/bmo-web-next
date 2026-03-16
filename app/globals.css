@@ -147,6 +147,26 @@
 }
 
 @layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(0 85% 50%), hsl(40 95% 50%));
+  }
+
+  .gradient-red {
+    background: linear-gradient(135deg, hsl(0 85% 50%), hsl(0 70% 40%));
+  }
+
+  .gradient-blue {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, hsl(40 95% 50%), hsl(35 90% 55%));
+  }
+
+  .gradient-mixed {
+    background: linear-gradient(135deg, #b91c1c 0%, #f59e0b 100%);
+  }
+
   .gradient-text {
     background: linear-gradient(135deg, hsl(0 85% 50%), hsl(40 95% 50%));
     -webkit-background-clip: text;
