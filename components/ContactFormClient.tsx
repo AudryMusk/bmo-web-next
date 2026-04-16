@@ -15,7 +15,8 @@ type FormState = {
 } | null
 
 export default function ContactFormClient() {
-  const [state, action, pending] = useActionState(submitContactFormAction, null) as [FormState, typeof submitContactFormAction, boolean]
+  const [rawState, action, pending] = useActionState(submitContactFormAction, null)
+  const state = rawState as FormState
 
   if (state?.success) {
     return (

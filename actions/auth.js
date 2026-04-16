@@ -38,3 +38,29 @@ export async function logoutAction() {
   await destroySession()
   redirect('/login')
 }
+
+export async function registerAction(_prevState, formData) {
+  const email           = formData.get('email')?.trim()
+  const password        = formData.get('password')
+  const confirmPassword = formData.get('confirmPassword')
+
+  if (!email || !password) return { error: 'Email et mot de passe requis.' }
+  if (password !== confirmPassword) return { error: 'Les mots de passe ne correspondent pas.' }
+
+  let data
+  try {
+    const res = await fetch(`${USER_MODULE_URL}/auth/register`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, password, appId: APP_ID }),
+      cache:   'no-store',
+    })
+    data = await res.json()
+    if (!res.ok) return { error: data?.message ?? data?.error ?? 'Erreur lors de l\'inscription.' }
+  } catch {
+    return { error: 'Le service d\'authentification est inaccessible. Réessayez plus tard.' }
+  }
+
+  await createSession({ token: data.token, user: data.user })
+  redirect('/admin/dashboard')
+}
