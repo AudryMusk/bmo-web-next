@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
   getMicrofinances,
-  getDistributeurs,
+  getMarchands,
   getGabUBA,
   getPartenaires,
   getNetworkStats,
@@ -23,9 +23,9 @@ import NetworkMap from "@/components/admin/NetworkMap.jsx";
 export const revalidate = 60
 
 export default async function Reseau() {
-  const [microfinances, distributeurs, gabUBA, partenaires, stats, gabAtms] = await Promise.all([
+  const [microfinances, marchands, gabUBA, partenaires, stats, gabAtms] = await Promise.all([
     getMicrofinances(),
-    getDistributeurs(),
+    getMarchands(),
     getGabUBA(),
     getPartenaires(),
     getNetworkStats(),
@@ -51,7 +51,7 @@ export default async function Reseau() {
               Notre <span className="gradient-text">Réseau</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Un réseau étendu de partenaires, distributeurs et points de
+              Un réseau étendu de partenaires, marchands et points de
               service pour vous servir partout au Bénin
             </p>
 
@@ -71,9 +71,9 @@ export default async function Reseau() {
               </div>
               <div className="glass-card rounded-2xl p-4">
                 <p className="text-3xl font-bold text-primary">
-                  {stats.distributors}
+                  {stats.marchands}
                 </p>
-                <p className="text-sm text-muted-foreground">Distributeurs</p>
+                <p className="text-sm text-muted-foreground">Marchands</p>
               </div>
               <div className="glass-card rounded-2xl p-4">
                 <p className="text-3xl font-bold text-primary">{totalGAB}+</p>
@@ -97,11 +97,11 @@ export default async function Reseau() {
                 Microfinances
               </TabsTrigger>
               <TabsTrigger
-                value="distributeurs"
+                value="marchands"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3 text-sm font-medium"
               >
                 <Store className="w-4 h-4 mr-2" />
-                Distributeurs
+                Marchands
               </TabsTrigger>
               <TabsTrigger
                 value="gab"
@@ -157,33 +157,41 @@ export default async function Reseau() {
               />
             </TabsContent>
 
-            {/* Distributeurs */}
-            <TabsContent value="distributeurs">
+            {/* Marchands */}
+            <TabsContent value="marchands">
               <div className="glass-card rounded-3xl p-6 lg:p-8">
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold mb-2">Nos Distributeurs</h2>
+                  <h2 className="text-2xl font-bold mb-2">Nos Marchands</h2>
                   <p className="text-muted-foreground">
-                    {stats.distributors} distributeurs régionaux pour vous servir
+                    {stats.marchands} marchands pour vous servir
                   </p>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {distributeurs.map((dist, index) => (
+                  {marchands.map((marchand, index) => (
                     <div key={index} className="bg-muted/50 rounded-2xl p-6">
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
-                          <Store className="w-6 h-6 text-primary-foreground" />
-                        </div>
+                        {marchand.photo ? (
+                          <img src={marchand.photo} alt={marchand.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-border" />
+                        ) : (
+                          <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Store className="w-6 h-6 text-primary-foreground" />
+                          </div>
+                        )}
                         <div className="flex-1">
-                          <h3 className="font-bold mb-2">{dist.name}</h3>
-                          <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
-                            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            <span>{dist.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Phone className="w-4 h-4 text-primary" />
-                            <span className="font-medium">{dist.phone}</span>
-                          </div>
+                          <h3 className="font-bold mb-2">{marchand.name}</h3>
+                          {(marchand.city || marchand.department) && (
+                            <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
+                              <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>{[marchand.city, marchand.department, marchand.country].filter(Boolean).join(', ')}</span>
+                            </div>
+                          )}
+                          {marchand.phone && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Phone className="w-4 h-4 text-primary" />
+                              <span className="font-medium">{marchand.phone}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -191,9 +199,9 @@ export default async function Reseau() {
                 </div>
               </div>
               <NetworkMap
-                items={distributeurs}
+                items={marchands}
                 primaryField="name"
-                secondaryField="location"
+                secondaryField="city"
                 markerEmoji="🏪"
                 markerColor="#e85d04"
               />

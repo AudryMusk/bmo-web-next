@@ -33,13 +33,13 @@ export const APP_PERMISSIONS: Permission[] = [
   { slug: 'tarifs:edit',                 description: 'Mettre à jour les prix et conditions tarifaires des produits et services.',                                      label: 'Modifier les tarifs' },
 
   // Réseau
-  { slug: 'reseau:view',                 description: 'Consulter l\'ensemble du réseau : microfinances, distributeurs, GAB/ATM et partenaires.',                        label: 'Voir le réseau' },
+  { slug: 'reseau:view',                 description: 'Consulter l\'ensemble du réseau : microfinances, marchands, GAB/ATM et partenaires.',                          label: 'Voir le réseau' },
   { slug: 'reseau:microfinances:create', description: 'Ajouter un nouvel établissement de microfinance au réseau.',                                                     label: 'Ajouter une microfinance' },
   { slug: 'reseau:microfinances:edit',   description: 'Modifier les informations d\'un établissement de microfinance existant.',                                        label: 'Modifier une microfinance' },
   { slug: 'reseau:microfinances:delete', description: 'Retirer un établissement de microfinance du réseau.',                                                            label: 'Supprimer une microfinance' },
-  { slug: 'reseau:distributeurs:create', description: 'Ajouter un nouveau point de distribution au réseau.',                                                            label: 'Ajouter un distributeur' },
-  { slug: 'reseau:distributeurs:edit',   description: 'Modifier les informations d\'un distributeur existant.',                                                         label: 'Modifier un distributeur' },
-  { slug: 'reseau:distributeurs:delete', description: 'Retirer un distributeur du réseau.',                                                                             label: 'Supprimer un distributeur' },
+  { slug: 'reseau:marchands:create', description: 'Ajouter un nouveau marchand au réseau.',                                                            label: 'Ajouter un marchand' },
+  { slug: 'reseau:marchands:edit',   description: 'Modifier les informations d\'un marchand existant.',                                                         label: 'Modifier un marchand' },
+  { slug: 'reseau:marchands:delete', description: 'Retirer un marchand du réseau.',                                                                             label: 'Supprimer un marchand' },
   { slug: 'reseau:gab:create',           description: 'Enregistrer un nouveau GAB/ATM dans le réseau.',                                                                 label: 'Ajouter un GAB/ATM' },
   { slug: 'reseau:gab:edit',             description: 'Mettre à jour les informations d\'un GAB/ATM existant (localisation, statut, etc.).',                            label: 'Modifier un GAB/ATM' },
   { slug: 'reseau:gab:delete',           description: 'Retirer un GAB/ATM du réseau.',                                                                                  label: 'Supprimer un GAB/ATM' },
@@ -67,7 +67,7 @@ export const ROUTE_PERMISSION_MAP: Record<string, string> = {
 
   '/admin/reseau':                       'reseau:view',
   '/admin/reseau/microfinances':         'reseau:view',
-  '/admin/reseau/distributeurs':         'reseau:view',
+  '/admin/reseau/marchands':             'reseau:view',
   '/admin/reseau/gab':                   'reseau:view',
   '/admin/reseau/partenaires':           'reseau:view',
 }

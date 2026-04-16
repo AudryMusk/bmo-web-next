@@ -93,7 +93,7 @@ export default function LoginForm({ loginAction }) {
                 <div className="grid grid-cols-3 gap-2.5 w-full">
                   {[
                     { val: '158+', lbl: 'Agences' },
-                    { val: '8',    lbl: 'Distributeurs' },
+                    { val: '8',    lbl: 'Marchands' },
                     { val: '30+',  lbl: 'GAB UBA' },
                   ].map(({ val, lbl }) => (
                     <div key={lbl} className="flex flex-col items-center gap-0.5 rounded-xl p-2.5"

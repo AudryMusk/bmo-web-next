@@ -48,7 +48,7 @@ const navItems = [
     section: 'RÉSEAU',
     items: [
       { icon: Landmark,   label: 'Microfinances', href: '/admin/reseau/microfinances' },
-      { icon: Store,      label: 'Distributeurs', href: '/admin/reseau/distributeurs' },
+      { icon: Store,      label: 'Marchands',     href: '/admin/reseau/distributeurs' },
       { icon: CreditCard, label: 'GAB UBA',       href: '/admin/reseau/gab' },
       { icon: Handshake,  label: 'Partenaires',   href: '/admin/reseau/partenaires' },
     ],

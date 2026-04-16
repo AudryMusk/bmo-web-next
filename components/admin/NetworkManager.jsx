@@ -13,21 +13,21 @@ import {
 import SubmitButton from './SubmitButton'
 import { useWithLoading } from '@/context/LoadingContext'
 
-function LogoUpload({ currentLogo }) {
-  const [preview, setPreview] = useState(currentLogo ?? null)
+function ImageUpload({ fieldName, removeFieldName, label, currentValue, previewClass = 'object-contain' }) {
+  const [preview, setPreview] = useState(currentValue ?? null)
   const [removed, setRemoved] = useState(false)
   const inputRef = useRef(null)
 
   return (
     <div className="flex flex-col gap-0.5">
-      <label className="text-xs font-medium text-slate-600">Logo (optionnel)</label>
+      <label className="text-xs font-medium text-slate-600">{label}</label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
           className="w-14 h-14 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary bg-slate-50 hover:bg-primary/5 flex items-center justify-center cursor-pointer transition-colors overflow-hidden shrink-0"
         >
           {preview
-            ? <img src={preview} alt="logo" className="w-full h-full object-contain" />
+            ? <img src={preview} alt={label} className={`w-full h-full ${previewClass}`} />
             : <ImageIcon size={20} className="text-slate-300" />
           }
         </div>
@@ -37,7 +37,7 @@ function LogoUpload({ currentLogo }) {
             onClick={() => inputRef.current?.click()}
             className="text-xs font-medium text-primary hover:underline cursor-pointer bg-transparent border-none text-left"
           >
-            {preview ? 'Changer le logo' : 'Importer un logo'}
+            {preview ? `Changer` : `Importer`}
           </button>
           {preview && (
             <button
@@ -48,12 +48,12 @@ function LogoUpload({ currentLogo }) {
               Supprimer
             </button>
           )}
-          <p className="text-[10px] text-slate-400">PNG, JPG, SVG — max 2 Mo</p>
+          <p className="text-[10px] text-slate-400">PNG, JPG — max 2 Mo</p>
         </div>
       </div>
       <input
         ref={inputRef}
-        name="logo"
+        name={fieldName}
         type="file"
         accept="image/*"
         className="hidden"
@@ -62,10 +62,17 @@ function LogoUpload({ currentLogo }) {
           if (file) { setPreview(URL.createObjectURL(file)); setRemoved(false) }
         }}
       />
-      {/* Hidden field to indicate removal of existing logo */}
-      <input type="hidden" name="removeLogo" value={removed ? '1' : ''} />
+      <input type="hidden" name={removeFieldName} value={removed ? '1' : ''} />
     </div>
   )
+}
+
+function LogoUpload({ currentLogo }) {
+  return <ImageUpload fieldName="logo" removeFieldName="removeLogo" label="Logo (optionnel)" currentValue={currentLogo} previewClass="object-contain" />
+}
+
+function PhotoUpload({ currentPhoto }) {
+  return <ImageUpload fieldName="photo" removeFieldName="removePhoto" label="Photo façade agence (optionnel)" currentValue={currentPhoto} previewClass="object-cover" />
 }
 
 function Field({ field, defaultValue }) {
@@ -98,7 +105,7 @@ function Field({ field, defaultValue }) {
   )
 }
 
-function EditRow({ item, fields, updateAction, onCancel }) {
+function EditRow({ item, fields, updateAction, onCancel, showPhoto }) {
   const [state, formAction] = useActionState(updateAction, null)
 
   useEffect(() => { if (state?.success) onCancel() }, [state])
@@ -112,7 +119,10 @@ function EditRow({ item, fields, updateAction, onCancel }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {fields.map(f => <Field key={f.name} field={f} defaultValue={item[f.name]} />)}
       </div>
-      <LogoUpload currentLogo={item.logo ?? null} />
+      <div className={showPhoto ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : ''}>
+        <LogoUpload currentLogo={item.logo ?? null} />
+        {showPhoto && <PhotoUpload currentPhoto={item.photo ?? null} />}
+      </div>
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} className="gap-1.5 cursor-pointer">
           <X size={13} /> Annuler
@@ -128,7 +138,7 @@ function EditRow({ item, fields, updateAction, onCancel }) {
   )
 }
 
-function AddRow({ fields, createAction, onCancel }) {
+function AddRow({ fields, createAction, onCancel, showPhoto }) {
   const [state, formAction] = useActionState(createAction, null)
 
   useEffect(() => { if (state?.success) onCancel() }, [state])
@@ -141,7 +151,10 @@ function AddRow({ fields, createAction, onCancel }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {fields.map(f => <Field key={f.name} field={f} defaultValue="" />)}
       </div>
-      <LogoUpload currentLogo={null} />
+      <div className={showPhoto ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : ''}>
+        <LogoUpload currentLogo={null} />
+        {showPhoto && <PhotoUpload currentPhoto={null} />}
+      </div>
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} className="gap-1.5 cursor-pointer">
           <X size={13} /> Annuler
@@ -161,8 +174,8 @@ function ItemDisplay({ item, displayConfig, showGps }) {
   const { primary, secondary, detail, badge, count } = displayConfig
   return (
     <div className="flex items-center gap-3">
-      {item.logo
-        ? <img src={item.logo} alt={item[primary]} className="w-9 h-9 rounded-lg object-contain border border-slate-100 bg-white shrink-0" />
+      {(item.photo || item.logo)
+        ? <img src={item.photo ?? item.logo} alt={item[primary]} className="w-9 h-9 rounded-lg object-cover border border-slate-100 bg-white shrink-0" />
         : <div className="w-9 h-9 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center shrink-0"><ImageIcon size={14} className="text-slate-300" /></div>
       }
       <div>
@@ -202,7 +215,7 @@ function ItemDisplay({ item, displayConfig, showGps }) {
   )
 }
 
-export default function NetworkManager({ title, items, fields, displayConfig, createAction, updateAction, deleteAction, showGps, mapHref, captureHrefBase }) {
+export default function NetworkManager({ title, items, fields, displayConfig, createAction, updateAction, deleteAction, showGps, showPhoto, mapHref, captureHrefBase }) {
   const router = useRouter()
   const { withLoading } = useWithLoading()
   const [editingId, setEditingId]       = useState(null)
@@ -237,7 +250,7 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
       </div>
 
       {adding && (
-        <AddRow fields={fields} createAction={createAction} onCancel={() => setAdding(false)} />
+        <AddRow fields={fields} createAction={createAction} onCancel={() => setAdding(false)} showPhoto={showPhoto} />
       )}
 
       <div className="flex flex-col gap-2">
@@ -249,6 +262,7 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
               fields={fields}
               updateAction={updateAction}
               onCancel={() => setEditingId(null)}
+              showPhoto={showPhoto}
             />
           ) : (
             <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-3 bg-white border border-slate-200 rounded-xl group hover:border-slate-300 transition-colors">

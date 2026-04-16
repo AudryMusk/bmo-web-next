@@ -130,16 +130,19 @@ model Microfinance {
   order    Int     @default(0)
 }
 
-model Distributor {
-  id       String  @id @default(cuid())
-  name     String
-  location String  @db.Text
-  phone    String
-  logo     String?
-  lat      Float?
-  lng      Float?
-  address  String?
-  order    Int     @default(0)
+model Marchand {
+  id         String  @id @default(cuid())
+  name       String
+  phone      String  @default("")
+  country    String  @default("Bénin")
+  department String?
+  city       String?
+  lat        Float?
+  lng        Float?
+  address    String?
+  photo      String?
+  logo       String?
+  order      Int     @default(0)
 }
 
 model GabAtm {

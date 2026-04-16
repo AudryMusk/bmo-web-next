@@ -14,8 +14,6 @@ const fields = [
   { name: 'country',    label: 'Pays', placeholder: 'Bénin' },
   { name: 'department', label: 'Département', placeholder: 'ex: Atlantique' },
   { name: 'city',       label: 'Ville', placeholder: 'ex: Cotonou' },
-  { name: 'lat',        label: 'Latitude', placeholder: 'ex: 6.3509' },
-  { name: 'lng',        label: 'Longitude', placeholder: 'ex: 2.3478' },
 ]
 
 const displayConfig = {
@@ -36,9 +34,8 @@ export default async function MarchandsPage() {
       updateAction={updateMarchandAction}
       deleteAction={deleteMarchandAction}
       showGps
-      showPhoto
-      mapHref="/admin/reseau/distributeurs/carte"
-      captureHrefBase="/admin/reseau/distributeurs/capture"
+      mapHref="/admin/reseau/marchands/carte"
+      captureHrefBase="/admin/reseau/marchands/capture"
     />
   )
 }

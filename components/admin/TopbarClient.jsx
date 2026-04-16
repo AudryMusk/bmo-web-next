@@ -12,7 +12,7 @@ const pageTitles = {
   '/admin/services/business':     'Services Business',
   '/admin/tarifs':                'Grilles tarifaires',
   '/admin/reseau/microfinances':  'Microfinances',
-  '/admin/reseau/distributeurs':  'Distributeurs',
+  '/admin/reseau/distributeurs':  'Marchands',
   '/admin/reseau/gab':            'GAB UBA',
   '/admin/reseau/partenaires':    'Partenaires',
 }

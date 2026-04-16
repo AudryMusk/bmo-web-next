@@ -76,55 +76,64 @@ export async function deleteMicrofinanceAction(formData) {
   revalidatePath('/admin/reseau/microfinances')
 }
 
-// ─── Distributors ─────────────────────────────────────────────────────────────
+// ─── Marchands ────────────────────────────────────────────────────────────────
 
-export async function createDistributorAction(_prevState, formData) {
-  const name     = formData.get('name')?.trim()
-  const location = formData.get('location')?.trim()
-  const phone    = formData.get('phone')?.trim() || ''
-  const newLogoFile = formData.get('logo')
-  const logoFromUrl = formData.get('logoUrl')
-  const savedLogo = await saveLogo(newLogoFile)
-  const logo     = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
+export async function createMarchandAction(_prevState, formData) {
+  const name       = formData.get('name')?.trim()
+  const phone      = formData.get('phone')?.trim() || ''
+  const country    = formData.get('country')?.trim() || 'Bénin'
+  const department = formData.get('department')?.trim() || null
+  const city       = formData.get('city')?.trim() || null
+  const newLogoFile  = formData.get('logo')
+  const logoFromUrl  = formData.get('logoUrl')
+  const savedLogo    = await saveLogo(newLogoFile)
+  const logo         = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
+  const newPhotoFile = formData.get('photo')
+  const photoFromUrl = formData.get('photoUrl')
+  const savedPhoto   = await saveLogo(newPhotoFile)
+  const photo        = savedPhoto ?? (typeof photoFromUrl === 'string' ? photoFromUrl : null)
   const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
   const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
   const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
-  if (!location) return { error: 'La localisation est requise.' }
-  const count = await prisma.distributor.count()
-  await prisma.distributor.create({ data: { name, location, phone, logo, lat, lng, address, order: count } })
-  revalidatePath('/admin/reseau/distributeurs')
+  const count = await prisma.marchand.count()
+  await prisma.marchand.create({ data: { name, phone, country, department, city, logo, photo, lat, lng, address, order: count } })
+  revalidatePath('/admin/reseau/marchands')
   return { success: true }
 }
 
-export async function updateDistributorAction(_prevState, formData) {
-  const id       = formData.get('id')
-  const name     = formData.get('name')?.trim()
-  const location = formData.get('location')?.trim()
-  const phone    = formData.get('phone')?.trim() || ''
-  const newLogo  = await saveLogo(formData.get('logo'))
-  const remove   = formData.get('removeLogo')
-  const existing = await prisma.distributor.findUnique({ where: { id }, select: { logo: true } })
-  const logo     = remove ? null : (newLogo ?? existing?.logo ?? null)
-  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+export async function updateMarchandAction(_prevState, formData) {
+  const id         = formData.get('id')
+  const name       = formData.get('name')?.trim()
+  const phone      = formData.get('phone')?.trim() || ''
+  const country    = formData.get('country')?.trim() || 'Bénin'
+  const department = formData.get('department')?.trim() || null
+  const city       = formData.get('city')?.trim() || null
+  const newLogo    = await saveLogo(formData.get('logo'))
+  const removeLogo = formData.get('removeLogo')
+  const newPhoto   = await saveLogo(formData.get('photo'))
+  const removePhoto = formData.get('removePhoto')
+  const existing   = await prisma.marchand.findUnique({ where: { id }, select: { logo: true, photo: true } })
+  const logo       = removeLogo ? null : (newLogo ?? existing?.logo ?? null)
+  const photo      = removePhoto ? null : (newPhoto ?? existing?.photo ?? null)
+  const lat        = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
+  const lng        = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
+  const address    = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
   if (!name) return { error: 'Le nom est requis.' }
-  if (!location) return { error: 'La localisation est requise.' }
-  await prisma.distributor.update({ where: { id }, data: { name, location, phone, logo, lat, lng, address } })
-  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
-    await deleteLogoFile(existing.logo)
-  }
-  revalidatePath('/admin/reseau/distributeurs')
+  await prisma.marchand.update({ where: { id }, data: { name, phone, country, department, city, logo, photo, lat, lng, address } })
+  if ((removeLogo || newLogo) && existing?.logo && existing.logo !== logo) await deleteLogoFile(existing.logo)
+  if ((removePhoto || newPhoto) && existing?.photo && existing.photo !== photo) await deleteLogoFile(existing.photo)
+  revalidatePath('/admin/reseau/marchands')
   return { success: true }
 }
 
-export async function deleteDistributorAction(formData) {
+export async function deleteMarchandAction(formData) {
   const id = formData.get('id')
-  const existing = await prisma.distributor.findUnique({ where: { id }, select: { logo: true } })
-  await prisma.distributor.delete({ where: { id } })
-  if (existing?.logo) await deleteLogoFile(existing.logo)
-  revalidatePath('/admin/reseau/distributeurs')
+  const existing = await prisma.marchand.findUnique({ where: { id }, select: { logo: true, photo: true } })
+  await prisma.marchand.delete({ where: { id } })
+  if (existing?.logo)  await deleteLogoFile(existing.logo)
+  if (existing?.photo) await deleteLogoFile(existing.photo)
+  revalidatePath('/admin/reseau/marchands')
 }
 
 // ─── GAB ATMs ─────────────────────────────────────────────────────────────────

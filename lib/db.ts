@@ -79,8 +79,8 @@ export async function getMicrofinances() {
   return prisma.microfinance.findMany({ orderBy: { order: 'asc' } })
 }
 
-export async function getDistributeurs() {
-  return prisma.distributor.findMany({ orderBy: { order: 'asc' } })
+export async function getMarchands() {
+  return prisma.marchand.findMany({ orderBy: { order: 'asc' } })
 }
 
 /** Returns GAB ATMs grouped by city: Record<cityName, location[]> */
@@ -104,15 +104,15 @@ export async function getPartenaires() {
 
 /** Compute network stats from live DB data */
 export async function getNetworkStats() {
-  const [microfinances, gabCount, distributors] = await Promise.all([
+  const [microfinances, gabCount, marchands] = await Promise.all([
     prisma.microfinance.findMany({ select: { agencies: true } }),
     prisma.gabAtm.count(),
-    prisma.distributor.count(),
+    prisma.marchand.count(),
   ])
   return {
     microfinances: microfinances.length,
     agencies: microfinances.reduce((sum, m) => sum + m.agencies, 0),
-    distributors,
+    marchands,
     gabCount,
     operators: 3,
   }

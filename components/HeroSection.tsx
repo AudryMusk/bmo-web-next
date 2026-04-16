@@ -55,7 +55,7 @@ const HeroSection = () => {
               </div>
               <div className="text-center lg:text-left">
                 <p className="text-2xl sm:text-3xl font-bold text-white">8</p>
-                <p className="text-sm text-yellow-500">Distributeurs</p>
+                <p className="text-sm text-yellow-500">Marchands</p>
               </div>
               <div className="text-center lg:text-left">
                 <p className="text-2xl sm:text-3xl font-bold text-white">
