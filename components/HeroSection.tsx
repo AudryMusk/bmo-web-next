@@ -5,9 +5,9 @@ import DownloadAppBtn from "./DownloadAppBtn";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen myCustomGradient01 overflow-hidden pt-28 lg:pt-0 pb-20 lg:pb-5">
+    <section className="relative min-h-screen myCustomGradient01 overflow-hidden pt-28 lg:pt-0 pb-48 lg:pb-32">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-80px)]">
+        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-80px)] lg:pt-20">
           {/* Left Content */}
           <div className="text-center lg:text-left order-2 lg:order-1">
             {/* Badge BCEAO */}
