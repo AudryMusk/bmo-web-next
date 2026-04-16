@@ -26,8 +26,8 @@ function gpsErrorMsg(err: GeolocationPositionError) {
 }
 
 function AccuracyBadge({ accuracy }: { accuracy: number }) {
-  const good = accuracy <= 20
-  const ok   = accuracy <= 50
+  const good = accuracy <= 10
+  const ok   = accuracy <= 30
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${
       good ? 'bg-emerald-100 text-emerald-700' :
@@ -35,7 +35,7 @@ function AccuracyBadge({ accuracy }: { accuracy: number }) {
              'bg-orange-100 text-orange-700'
     }`}>
       <Navigation size={11} />
-      {good ? 'Excellente' : ok ? 'Bonne' : 'Faible'} — ±{Math.round(accuracy)} m
+      {good ? 'Précis' : ok ? 'Acceptable' : 'Imprécis'} — ±{Math.round(accuracy)} m
     </span>
   )
 }
@@ -340,7 +340,7 @@ export default function InscriptionMarchand() {
 
             <h2 className="text-lg font-bold text-slate-900 mb-1">Position GPS</h2>
             <p className="text-sm text-slate-500 mb-5">
-              Restez immobile à l&apos;entrée de votre agence. Le GPS affine automatiquement la précision.
+              Placez-vous à l&apos;entrée de votre agence et confirmez votre position.
             </p>
 
             {/* GPS visual */}
@@ -390,11 +390,11 @@ export default function InscriptionMarchand() {
 
               <button
                 onClick={lockPosition}
-                disabled={!coords || coords.accuracy > 100}
+                disabled={!coords || coords.accuracy > 30}
                 className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
               >
                 <MapPin size={18} />
-                {coords && coords.accuracy <= 100 ? 'Confirmer ma position' : 'En attente du GPS…'}
+                {coords && coords.accuracy <= 30 ? 'Confirmer ma position' : 'En attente du GPS…'}
               </button>
             </div>
           </div>
@@ -456,12 +456,6 @@ export default function InscriptionMarchand() {
                 className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
               >
                 <CheckCircle2 size={18} /> Envoyer mon inscription
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="w-full text-slate-400 text-sm py-2 hover:text-slate-600 transition-colors bg-transparent border-none cursor-pointer"
-              >
-                Envoyer sans photo →
               </button>
             </div>
           </div>
