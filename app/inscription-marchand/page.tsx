@@ -126,6 +126,7 @@ export default function InscriptionMarchand() {
       setWatching(false)
       return
     }
+    
     watchId.current = navigator.geolocation.watchPosition(
       pos => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
       err => { setGpsErr(gpsErrorMsg(err)); setWatching(false) },

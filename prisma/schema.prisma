@@ -132,8 +132,10 @@ model Microfinance {
 
 model Marchand {
   id         String  @id @default(cuid())
+  token      String  @unique @default(cuid())
   name       String
   phone      String  @default("")
+  email      String  @default("")
   country    String  @default("Bénin")
   department String?
   city       String?
@@ -142,6 +144,7 @@ model Marchand {
   address    String?
   photo      String?
   logo       String?
+  active     Boolean @default(false)
   order      Int     @default(0)
 }
 

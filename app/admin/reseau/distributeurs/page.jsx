@@ -3,6 +3,8 @@ import {
   createMarchandAction,
   updateMarchandAction,
   deleteMarchandAction,
+  importMarchandsAction,
+  bulkSetActiveMarchandsAction,
 } from '@/actions/reseau'
 import NetworkManager from '@/components/admin/NetworkManager'
 
@@ -11,6 +13,7 @@ export const metadata = { title: 'Marchands — CMS B-MO' }
 const fields = [
   { name: 'name',       label: 'Nom du marchand (exact dans BMO)', required: true },
   { name: 'phone',      label: 'Numéro du marchand', placeholder: '+229...' },
+  { name: 'email',      label: 'Email', placeholder: 'ex: contact@marchand.com' },
   { name: 'country',    label: 'Pays', placeholder: 'Bénin' },
   { name: 'department', label: 'Département', placeholder: 'ex: Atlantique' },
   { name: 'city',       label: 'Ville', placeholder: 'ex: Cotonou' },
@@ -35,10 +38,12 @@ export default async function MarchandsPage() {
       createAction={createMarchandAction}
       updateAction={updateMarchandAction}
       deleteAction={deleteMarchandAction}
+      importAction={importMarchandsAction}
+      bulkActiveAction={bulkSetActiveMarchandsAction}
+      shareLinkBase="/inscription-marchand"
       showGps
       showPhoto
       mapHref="/admin/reseau/distributeurs/carte"
-      captureHrefBase="/admin/reseau/distributeurs/capture"
     />
   )
 }
