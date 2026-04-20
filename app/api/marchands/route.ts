@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
   const lat = parseFloat(searchParams.get('latitude') ?? '')
   const lng = parseFloat(searchParams.get('longitude') ?? '')
   const limit = parseInt(searchParams.get('limit') ?? '20')
+  const radius = parseFloat(searchParams.get('radius') ?? '')
 
   const marchands = await prisma.marchand.findMany({
     where: { active: true },
@@ -44,6 +45,7 @@ export async function GET(req: NextRequest) {
           ? haversineKm(lat, lng, m.lat, m.lng)
           : null,
     }))
+    .filter(m => isNaN(radius) || m.distance === null || m.distance <= radius)
     .sort((a, b) => {
       if (a.distance === null) return 1
       if (b.distance === null) return -1
