@@ -1,11 +1,17 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import Link from 'next/link'
-import SubmitButton from './SubmitButton'
+import { Loader2 } from 'lucide-react'
 
 export default function LoginForm({ loginAction }) {
   const [state, formAction] = useActionState(loginAction, null)
+  const [loading, setLoading] = useState(false)
+
+  // Reset loading only when server returns an error
+  useEffect(() => {
+    if (state?.error) setLoading(false)
+  }, [state])
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-slate-50 p-6 md:p-10">
@@ -13,7 +19,7 @@ export default function LoginForm({ loginAction }) {
         <div className="overflow-hidden rounded-2xl shadow-sm border border-slate-200 bg-white">
           <div className="grid md:grid-cols-2">
 
-            <form action={formAction} className="p-6 md:p-8 flex flex-col gap-5">
+            <form action={formAction} onSubmit={() => setLoading(true)} className="p-6 md:p-8 flex flex-col gap-5">
               <div className="flex flex-col items-center gap-3 text-center">
                 <img src="/bmo-logo.png" alt="B-MO" className="h-10 w-auto" />
                 <div>
@@ -46,12 +52,14 @@ export default function LoginForm({ loginAction }) {
                 </p>
               )}
 
-              <SubmitButton
-                loadingText="Connexion..."
-                className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer border-none text-sm"
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary hover:bg-primary-hover disabled:opacity-70 text-white font-semibold py-2.5 rounded-lg transition-colors cursor-pointer border-none text-sm flex items-center justify-center gap-2"
               >
-                Se connecter
-              </SubmitButton>
+                {loading && <Loader2 size={15} className="animate-spin" />}
+                {loading ? 'Connexion...' : 'Se connecter'}
+              </button>
 
               <p className="text-center text-xs text-slate-400">
                 Pas encore de compte ?{' '}

@@ -10,16 +10,16 @@ import { useLoading } from '@/context/LoadingContext'
  * Props : loadingText, disabled (extra), className, ...rest
  * Déclenche automatiquement le BmoLoader global pendant la soumission.
  */
-export default function SubmitButton({ children, loadingText, disabled, className, ...props }) {
+export default function SubmitButton({ children, loadingText, disabled, forceLoading, className, ...props }) {
   const { pending } = useFormStatus()
   const { show, hide } = useLoading()
-  const isDisabled = pending || disabled
+  const isLoading = pending || forceLoading
+  const isDisabled = isLoading || disabled
 
-  // Synchronise le loader global avec l'état pending du formulaire
   useEffect(() => {
-    if (pending) show()
+    if (isLoading) show()
     else hide()
-  }, [pending])
+  }, [isLoading])
 
   return (
     <button
@@ -28,7 +28,7 @@ export default function SubmitButton({ children, loadingText, disabled, classNam
       className={className}
       {...props}
     >
-      {pending ? (loadingText ?? 'Chargement…') : children}
+      {isLoading ? (loadingText ?? 'Chargement…') : children}
     </button>
   )
 }

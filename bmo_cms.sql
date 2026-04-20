@@ -197,7 +197,11 @@ CREATE TABLE `Marchand` (
   `photo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `logo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `order` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `active` tinyint(1) NOT NULL DEFAULT '0',
+  `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `Marchand_token_key` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -207,7 +211,7 @@ CREATE TABLE `Marchand` (
 
 LOCK TABLES `Marchand` WRITE;
 /*!40000 ALTER TABLE `Marchand` DISABLE KEYS */;
-INSERT INTO `Marchand` VALUES ('cmmah110d002xsbm4rnh4gu2z','SAK-SERVICES','01 97 70 73 73','Bénin',NULL,'Godomey Togoudo - Allegléta - Womey',6.3509,2.3478,'982W+8WH, Cotonou, Benin','/uploads/1776360650269-zq4qc2rpxr.png',NULL,0),('cmmah110i002ysbm46l4tooge','RÈGNE DE L\'ÉTERNEL','01 97 33 95 23','Bénin',NULL,'Porto-Novo',NULL,NULL,NULL,NULL,NULL,1),('cmmah110n002zsbm4c43g6lmt','NETSHOP','01 96 73 92 72 / 01 96 20 92 09','Bénin',NULL,'Ikpinlè Tankpè - Parana - Bidossessi - Sos - Ganvié',NULL,NULL,NULL,NULL,NULL,2),('cmmah110q0030sbm4xue6sd7a','ALAKHBAAR SERVICE','01 97 97 02 91 / 01 90 56 56 56','Bénin',NULL,'1er - 4ième arrondissement',NULL,NULL,NULL,NULL,NULL,3),('cmmah110u0031sbm4jcjqbgim','EXPERT COMMUNICATION','01 96 64 92 83','Bénin',NULL,'Aguégué - Adjohoun - Dangbo - Bonou - Akpro Missérété - Adjarra - Avrankou',NULL,NULL,NULL,NULL,NULL,4),('cmmah110x0032sbm4sg9dywtc','DON DE DIEU SALEM','01 97 27 67 91','Bénin',NULL,'Glo - Zè - Tori - Allada - Toffo',NULL,NULL,NULL,NULL,NULL,5),('cmmah11110033sbm4ssvkibov','KR BUSINESS CENTER','01 97 35 49 46','Bénin',NULL,'Parakou - Tchaourou',NULL,NULL,NULL,NULL,NULL,6),('cmmah11140034sbm4ahlkbum4','NOUROU DISTRIBUTION & SERVICES','01 44 71 74 88 / 01 95 77 86 61','Bénin',NULL,'Natitingou',NULL,NULL,NULL,NULL,NULL,7);
+INSERT INTO `Marchand` VALUES ('cmmah110d002xsbm4rnh4gu2z','SAK-SERVICES','01 97 70 73 73','Bénin',NULL,'Godomey Togoudo - Allegléta - Womey',6.3509,2.3478,'982W+8WH, Cotonou, Benin','/uploads/1776360650269-zq4qc2rpxr.png',NULL,0,'',1,'cmmah110d002xsbm4rnh4gu2z'),('cmmah110i002ysbm46l4tooge','RÈGNE DE L\'ÉTERNEL','01 97 33 95 23','Bénin',NULL,'Porto-Novo',6.350954243303118,2.347854639271923,'982W+8WH, Cotonou, Benin','/uploads/1776444018867-pbcupj0ltwm.jpg',NULL,1,'',1,'cmmah110i002ysbm46l4tooge'),('cmmah110n002zsbm4c43g6lmt','NETSHOP','01 96 73 92 72 / 01 96 20 92 09','Bénin',NULL,'Ikpinlè Tankpè - Parana - Bidossessi - Sos - Ganvié',NULL,NULL,NULL,NULL,NULL,2,'',1,'cmmah110n002zsbm4c43g6lmt'),('cmmah110q0030sbm4xue6sd7a','ALAKHBAAR SERVICE','01 97 97 02 91 / 01 90 56 56 56','Bénin',NULL,'1er - 4ième arrondissement',NULL,NULL,NULL,NULL,NULL,3,'',1,'cmmah110q0030sbm4xue6sd7a'),('cmmah110u0031sbm4jcjqbgim','EXPERT COMMUNICATION','01 96 64 92 83','Bénin',NULL,'Aguégué - Adjohoun - Dangbo - Bonou - Akpro Missérété - Adjarra - Avrankou',NULL,NULL,NULL,NULL,NULL,4,'',1,'cmmah110u0031sbm4jcjqbgim'),('cmmah110x0032sbm4sg9dywtc','DON DE DIEU SALEM','01 97 27 67 91','Bénin',NULL,'Glo - Zè - Tori - Allada - Toffo',NULL,NULL,NULL,NULL,NULL,5,'',1,'cmmah110x0032sbm4sg9dywtc'),('cmmah11110033sbm4ssvkibov','KR BUSINESS CENTER','01 97 35 49 46','Bénin',NULL,'Parakou - Tchaourou',NULL,NULL,NULL,NULL,NULL,6,'',1,'cmmah11110033sbm4ssvkibov'),('cmmah11140034sbm4ahlkbum4','NOUROU DISTRIBUTION & SERVICES','01 44 71 74 88 / 01 95 77 86 61','Bénin',NULL,'Natitingou',NULL,NULL,NULL,NULL,NULL,7,'',1,'cmmah11140034sbm4ahlkbum4'),('cmo1x27rc000056v13kc11zqd','Yaggss','458118548404','Bénin','Borgou','Bouka',6.351042172457316,2.347740548418598,'982W+8WH, Cotonou, Benin','/uploads/1776370382366-q3rxfnu3dio.jpg',NULL,8,'',0,'cmo1x27rc000056v13kc11zqd'),('cmo2nm5zt0000w1j6m5jsg013','Ifkckclffk','5464343434343','Bénin','Borgou','Dérassi',6.427675758004671,2.345206677001177,'C8HW+96Q, Abomey Calavi, Benin','/uploads/1776414983142-vv7zd7bqp9o.jpg',NULL,9,'',1,'cmo2nm5zt0000w1j6m5jsg013');
 /*!40000 ALTER TABLE `Marchand` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -453,4 +457,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-16 20:38:07
+-- Dump completed on 2026-04-17 19:03:08

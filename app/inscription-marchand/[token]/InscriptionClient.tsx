@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { MapPin, Navigation, ArrowLeft, Camera, CheckCircle2, AlertCircle, RefreshCw, ChevronRight, Store } from 'lucide-react'
+import { MapPin, Navigation, ArrowLeft, Camera, CheckCircle2, AlertCircle, RefreshCw, ChevronRight, Store, Loader2 } from 'lucide-react'
 import { submitMarchandLocationAction } from '@/actions/reseau'
 
 type Step = 'welcome' | 'gps' | 'photo' | 'submitting' | 'done' | 'error'
@@ -65,6 +65,9 @@ function StepBar({ current }: { current: 1 | 2 }) {
 }
 
 export default function InscriptionClient({ marchand }: { marchand: Marchand }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const [step, setStep] = useState<Step>('welcome')
 
   // GPS
@@ -92,7 +95,7 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
     )
   }, [])
 
-  const startGps = useCallback(async () => {
+  const startGps = useCallback(async (forceRetry = false) => {
     setGpsErr(null)
     if (!navigator.geolocation) { setGpsErr("La géolocalisation n'est pas supportée."); return }
 
@@ -103,10 +106,12 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
       setPermState(result.state)
       result.onchange = () => setPermState(result.state)
 
-      if (result.state === 'denied') {
+      if (result.state === 'denied' && !forceRetry) {
         setGpsErr("Localisation bloquée. Allez dans les réglages de votre navigateur et autorisez l'accès à la position pour ce site.")
         return
       }
+      // Si forceRetry (user dit "j'ai activé"), on tente quand même watchPosition
+      // Le navigateur retournera une erreur si toujours bloqué
       watchGps()
     } catch {
       watchGps()
@@ -153,6 +158,15 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
 
   const alreadyHasGps = marchand.lat != null && marchand.lng != null
 
+  if (!mounted) return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3 text-slate-400">
+        <Loader2 size={32} className="animate-spin text-primary" />
+        <p className="text-sm font-medium">Chargement…</p>
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-start p-4 py-8">
       <div className="w-full max-w-md">
@@ -196,8 +210,9 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
               </p>
 
               <button
+                type="button"
                 onClick={() => { setStep('gps'); startGps() }}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors touch-manipulation"
               >
                 Commencer <ChevronRight size={18} />
               </button>
@@ -209,7 +224,7 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
         {step === 'gps' && (
           <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
             <StepBar current={1} />
-            <button onClick={() => { stopGps(); setStep('welcome') }} className="h-8 w-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 border-none bg-transparent cursor-pointer mb-2">
+            <button type="button" onClick={() => { stopGps(); setStep('welcome') }} className="h-8 w-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 border-none bg-transparent cursor-pointer mb-2">
               <ArrowLeft size={18} />
             </button>
 
@@ -234,9 +249,19 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
                 )}
               </div>
               {coords && !gpsErr && (
-                <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
-                  <AccuracyBadge accuracy={coords.accuracy} />
-                  <p className="text-xs font-mono text-slate-500">{coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}</p>
+                <div className="bg-slate-50 rounded-xl px-4 py-3 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <AccuracyBadge accuracy={coords.accuracy} />
+                    <div className="flex items-center gap-1.5">
+                      {coords.accuracy > 10 && <Loader2 size={12} className="animate-spin text-slate-400" />}
+                      <p className="text-xs font-mono text-slate-500">{coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}</p>
+                    </div>
+                  </div>
+                  {coords.accuracy > 10 && (
+                    <p className="text-xs text-amber-600 font-medium">
+                      Restez immobile — le GPS affine la précision…
+                    </p>
+                  )}
                 </div>
               )}
               {gpsErr && (
@@ -248,28 +273,27 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
 
             <div className="flex flex-col gap-3">
               {gpsErr && (
-                permState === 'denied' ? (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs text-slate-500 text-center px-2">
-                      Autorisez la localisation dans les <strong>réglages de votre navigateur</strong>, puis revenez sur cette page.
-                    </p>
-                    <button onClick={() => { setGpsErr(null); startGps() }} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors">
-                      <RefreshCw size={16} /> J&apos;ai activé la localisation
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => { setGpsErr(null); startGps() }} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors">
+                <>
+                  <button type="button" onClick={() => window.location.reload()} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors touch-manipulation">
                     <RefreshCw size={16} /> Réessayer
                   </button>
-                )
+                  {permState === 'denied' && (
+                    <p className="text-xs text-slate-400 text-center px-2">
+                      Si la localisation reste bloquée, autorisez-la dans les <strong>réglages de votre navigateur</strong> puis réessayez.
+                    </p>
+                  )}
+                </>
               )}
               <button
+                type="button"
                 onClick={lockPosition}
-                disabled={!coords || coords.accuracy > 30}
-                className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+                disabled={!coords || coords.accuracy > 10}
+                className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors touch-manipulation"
               >
-                <MapPin size={18} />
-                {coords && coords.accuracy <= 30 ? 'Confirmer ma position' : 'En attente du GPS…'}
+                {coords && coords.accuracy <= 10
+                  ? <><MapPin size={18} /> Confirmer ma position</>
+                  : <><Loader2 size={18} className="animate-spin" /> En attente de précision GPS…</>
+                }
               </button>
             </div>
           </div>
@@ -316,7 +340,7 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
               <button
                 onClick={handleSubmit}
                 disabled={!photoFile && !marchand.photo}
-                className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 transition-colors touch-manipulation"
               >
                 <CheckCircle2 size={18} /> Envoyer ma fiche
               </button>
