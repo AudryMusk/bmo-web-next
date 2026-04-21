@@ -5,6 +5,8 @@ import { join } from 'path'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 async function saveLogo(file) {
   if (!file || typeof file === 'string' || file.size === 0) return null
   const ext = file.name.split('.').pop()
@@ -18,53 +20,84 @@ async function saveLogo(file) {
 async function deleteLogoFile(logoPath) {
   if (!logoPath || typeof logoPath !== 'string') return
   if (!logoPath.startsWith('/uploads/')) return
-  const filePath = join(process.cwd(), 'public', logoPath)
+  try { await unlink(join(process.cwd(), 'public', logoPath)) } catch {}
+}
+
+async function reverseGeocode(lat, lng) {
+  const key = process.env.GOOGLE_MAPS_API_KEY
+  if (!key || !lat || !lng) return null
   try {
-    await unlink(filePath)
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`,
+      { redirect: 'follow', signal: AbortSignal.timeout(5000) }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.results?.[0]?.formatted_address ?? null
   } catch {
-    // ignore missing file
+    return null
   }
+}
+
+function timer(label) {
+  const t = Date.now()
+  return () => console.log(`[action] ${label} — ${Date.now() - t}ms`)
 }
 
 // ─── Microfinances ────────────────────────────────────────────────────────────
 
 export async function createMicrofinanceAction(_prevState, formData) {
+  const done = timer('createMicrofinance')
   const name     = formData.get('name')?.trim()
   const agencies = parseInt(formData.get('agencies'), 10)
-  // allow passing an existing logo URL when recreating (logoUrl)
-  const newLogoFile = formData.get('logo')
+  const lat      = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng      = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const logoFromUrl = formData.get('logoUrl')
-  const savedLogo = await saveLogo(newLogoFile)
-  const logo     = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
-  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+
   if (!name) return { error: 'Le nom est requis.' }
   if (isNaN(agencies)) return { error: "Nombre d'agences invalide." }
-  const count = await prisma.microfinance.count()
-  await prisma.microfinance.create({ data: { name, agencies, logo, lat, lng, address, order: count } })
+
+  const [savedLogo, address, count] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    reverseGeocode(lat, lng),
+    prisma.microfinance.count(),
+  ])
+  const logo = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
+
+  await prisma.microfinance.create({
+    data: { name, agencies, logo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
+  })
   revalidatePath('/admin/reseau/microfinances')
+  done()
   return { success: true }
 }
 
 export async function updateMicrofinanceAction(_prevState, formData) {
+  const done = timer('updateMicrofinance')
   const id       = formData.get('id')
   const name     = formData.get('name')?.trim()
   const agencies = parseInt(formData.get('agencies'), 10)
-  const newLogo  = await saveLogo(formData.get('logo'))
+  const lat      = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng      = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const remove   = formData.get('removeLogo')
-  const existing = await prisma.microfinance.findUnique({ where: { id }, select: { logo: true } })
-  const logo     = remove ? null : (newLogo ?? existing?.logo ?? null)
-  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+
   if (!name) return { error: 'Le nom est requis.' }
   if (isNaN(agencies)) return { error: "Nombre d'agences invalide." }
-  await prisma.microfinance.update({ where: { id }, data: { name, agencies, logo, lat, lng, address } })
-  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
-    await deleteLogoFile(existing.logo)
-  }
+
+  const [newLogo, address, existing] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    reverseGeocode(lat, lng),
+    prisma.microfinance.findUnique({ where: { id }, select: { logo: true } }),
+  ])
+  const logo = remove ? null : (newLogo ?? existing?.logo ?? null)
+
+  await prisma.microfinance.update({
+    where: { id },
+    data: { name, agencies, logo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null },
+  })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/microfinances')
+  done()
   return { success: true }
 }
 
@@ -79,31 +112,39 @@ export async function deleteMicrofinanceAction(formData) {
 // ─── Marchands ────────────────────────────────────────────────────────────────
 
 export async function createMarchandAction(_prevState, formData) {
+  const done = timer('createMarchand')
   const name       = formData.get('name')?.trim()
   const phone      = formData.get('phone')?.trim() || ''
   const email      = formData.get('email')?.trim() || ''
   const country    = formData.get('country')?.trim() || 'Bénin'
   const department = formData.get('department')?.trim() || null
   const city       = formData.get('city')?.trim() || null
-  const newLogoFile  = formData.get('logo')
+  const lat        = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng        = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const logoFromUrl  = formData.get('logoUrl')
-  const savedLogo    = await saveLogo(newLogoFile)
-  const logo         = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
-  const newPhotoFile = formData.get('photo')
   const photoFromUrl = formData.get('photoUrl')
-  const savedPhoto   = await saveLogo(newPhotoFile)
-  const photo        = savedPhoto ?? (typeof photoFromUrl === 'string' ? photoFromUrl : null)
-  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+
   if (!name) return { error: 'Le nom est requis.' }
-  const count = await prisma.marchand.count()
-  await prisma.marchand.create({ data: { name, phone, email, country, department, city, logo, photo, lat, lng, address, order: count } })
+
+  const [savedLogo, savedPhoto, address, count] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    saveLogo(formData.get('photo')),
+    reverseGeocode(lat, lng),
+    prisma.marchand.count(),
+  ])
+  const logo  = savedLogo  ?? (typeof logoFromUrl  === 'string' ? logoFromUrl  : null)
+  const photo = savedPhoto ?? (typeof photoFromUrl === 'string' ? photoFromUrl : null)
+
+  await prisma.marchand.create({
+    data: { name, phone, email, country, department, city, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
+  })
   revalidatePath('/admin/reseau/marchands')
+  done()
   return { success: true }
 }
 
 export async function updateMarchandAction(_prevState, formData) {
+  const done = timer('updateMarchand')
   const id         = formData.get('id')
   const name       = formData.get('name')?.trim()
   const phone      = formData.get('phone')?.trim() || ''
@@ -111,36 +152,49 @@ export async function updateMarchandAction(_prevState, formData) {
   const country    = formData.get('country')?.trim() || 'Bénin'
   const department = formData.get('department')?.trim() || null
   const city       = formData.get('city')?.trim() || null
-  const newLogo    = await saveLogo(formData.get('logo'))
-  const removeLogo = formData.get('removeLogo')
-  const newPhoto   = await saveLogo(formData.get('photo'))
+  const lat        = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng        = formData.get('lng') ? parseFloat(formData.get('lng')) : null
+  const removeLogo  = formData.get('removeLogo')
   const removePhoto = formData.get('removePhoto')
-  const existing   = await prisma.marchand.findUnique({ where: { id }, select: { logo: true, photo: true } })
-  const logo       = removeLogo ? null : (newLogo ?? existing?.logo ?? null)
-  const photo      = removePhoto ? null : (newPhoto ?? existing?.photo ?? null)
-  const lat        = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng        = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address    = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+
   if (!name) return { error: 'Le nom est requis.' }
-  await prisma.marchand.update({ where: { id }, data: { name, phone, email, country, department, city, logo, photo, lat, lng, address } })
-  if ((removeLogo || newLogo) && existing?.logo && existing.logo !== logo) await deleteLogoFile(existing.logo)
+
+  const [newLogo, newPhoto, address, existing] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    saveLogo(formData.get('photo')),
+    reverseGeocode(lat, lng),
+    prisma.marchand.findUnique({ where: { id }, select: { logo: true, photo: true } }),
+  ])
+  const logo  = removeLogo  ? null : (newLogo  ?? existing?.logo  ?? null)
+  const photo = removePhoto ? null : (newPhoto ?? existing?.photo ?? null)
+
+  await prisma.marchand.update({
+    where: { id },
+    data: { name, phone, email, country, department, city, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null },
+  })
+  if ((removeLogo  || newLogo)  && existing?.logo  && existing.logo  !== logo)  await deleteLogoFile(existing.logo)
   if ((removePhoto || newPhoto) && existing?.photo && existing.photo !== photo) await deleteLogoFile(existing.photo)
   revalidatePath('/admin/reseau/marchands')
+  done()
   return { success: true }
 }
 
 export async function importMarchandsAction(rows) {
+  const done = timer('importMarchands')
   if (!Array.isArray(rows) || rows.length === 0) return { error: 'Aucune donnée à importer.' }
 
-  const existing = await prisma.marchand.findMany({ select: { name: true } })
+  const [existing, count] = await Promise.all([
+    prisma.marchand.findMany({ select: { name: true } }),
+    prisma.marchand.count(),
+  ])
   const existingNames = new Set(existing.map(m => m.name.trim().toLowerCase()))
 
-  let order = await prisma.marchand.count()
+  let order = count
   const added = [], skipped = [], errors = []
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
-    const line = i + 2 // line 1 = header
+    const line = i + 2
 
     const missingFields = ['name', 'phone', 'email', 'country', 'department', 'city'].filter(f => !row[f]?.trim())
     if (missingFields.length > 0) {
@@ -160,23 +214,17 @@ export async function importMarchandsAction(rows) {
       errors.push({ line, name: row.name.trim(), reason: `Longitude invalide : "${row.lng}"` })
       continue
     }
-
     try {
       await prisma.marchand.create({
         data: {
-          name:       row.name.trim(),
-          phone:      row.phone?.trim()      || '',
-          email:      row.email?.trim()      || '',
-          country:    row.country?.trim()    || 'Bénin',
-          department: row.department?.trim() || null,
-          city:       row.city?.trim()       || null,
-          lat:        row.lat ? parseFloat(row.lat) : null,
-          lng:        row.lng ? parseFloat(row.lng) : null,
-          active:     false,
-          order:      order++,
+          name: row.name.trim(), phone: row.phone?.trim() || '', email: row.email?.trim() || '',
+          country: row.country?.trim() || 'Bénin', department: row.department?.trim() || null,
+          city: row.city?.trim() || null,
+          lat: row.lat ? parseFloat(row.lat) : null, lng: row.lng ? parseFloat(row.lng) : null,
+          active: false, order: order++,
         },
       })
-      existingNames.add(normalizedName) // évite les doublons dans le même CSV
+      existingNames.add(normalizedName)
       added.push({ line, name: row.name.trim() })
     } catch (e) {
       errors.push({ line, name: row.name.trim(), reason: `Erreur base de données : ${e?.message ?? 'inconnue'}` })
@@ -185,10 +233,12 @@ export async function importMarchandsAction(rows) {
 
   revalidatePath('/admin/reseau/marchands')
   revalidatePath('/admin/reseau/distributeurs')
+  done()
   return { success: true, added, skipped, errors, total: rows.length }
 }
 
 export async function submitMarchandLocationAction(_prevState, formData) {
+  const done = timer('submitMarchandLocation')
   const token = formData.get('token')
   if (!token) return { error: 'Lien invalide.' }
 
@@ -197,17 +247,17 @@ export async function submitMarchandLocationAction(_prevState, formData) {
 
   const lat = formData.get('lat') ? parseFloat(formData.get('lat')) : null
   const lng = formData.get('lng') ? parseFloat(formData.get('lng')) : null
-  const address = (await reverseGeocode(lat, lng)) ?? null
 
-  const photoFile = formData.get('photo')
-  const newPhoto = await saveLogo(photoFile)
-  const photo = newPhoto ?? marchand.photo ?? null
+  const [address, newPhoto] = await Promise.all([
+    reverseGeocode(lat, lng),
+    saveLogo(formData.get('photo')),
+  ])
 
   await prisma.marchand.update({
     where: { token },
-    data: { lat, lng, address, photo },
+    data: { lat, lng, address, photo: newPhoto ?? marchand.photo ?? null },
   })
-
+  done()
   return { success: true }
 }
 
@@ -229,58 +279,56 @@ export async function deleteMarchandAction(formData) {
 
 // ─── GAB ATMs ─────────────────────────────────────────────────────────────────
 
-async function reverseGeocode(lat, lng) {
-  const key = process.env.GOOGLE_MAPS_API_KEY
-  if (!key || !lat || !lng) return null
-  try {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`,
-      { redirect: 'follow' }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.results?.[0]?.formatted_address ?? null
-  } catch {
-    return null
-  }
-}
-
 export async function createGabAction(_prevState, formData) {
+  const done = timer('createGab')
   const city     = formData.get('city')?.trim()
   const location = formData.get('location')?.trim()
-  const newLogoFile = formData.get('logo')
+  const lat      = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng      = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const logoFromUrl = formData.get('logoUrl')
-  const savedLogo = await saveLogo(newLogoFile)
-  const logo     = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
-  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
 
   if (!city || !location) return { error: 'Ville et localisation requises.' }
-  const count = await prisma.gabAtm.count()
-  await prisma.gabAtm.create({ data: { city, location, logo, lat, lng, address, order: count } })
+
+  const [savedLogo, address, count] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    reverseGeocode(lat, lng),
+    prisma.gabAtm.count(),
+  ])
+  const logo = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
+
+  await prisma.gabAtm.create({
+    data: { city, location, logo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
+  })
   revalidatePath('/admin/reseau/gab')
+  done()
   return { success: true }
 }
 
 export async function updateGabAction(_prevState, formData) {
+  const done = timer('updateGab')
   const id       = formData.get('id')
   const city     = formData.get('city')?.trim()
   const location = formData.get('location')?.trim()
-  const newLogo  = await saveLogo(formData.get('logo'))
+  const lat      = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng      = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const remove   = formData.get('removeLogo')
-  const existing = await prisma.gabAtm.findUnique({ where: { id }, select: { logo: true } })
-  const logo     = remove ? null : (newLogo ?? existing?.logo ?? null)
-  const lat      = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng      = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address  = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
 
   if (!city || !location) return { error: 'Ville et localisation requises.' }
-  await prisma.gabAtm.update({ where: { id }, data: { city, location, logo, lat, lng, address } })
-  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
-    await deleteLogoFile(existing.logo)
-  }
+
+  const [newLogo, address, existing] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    reverseGeocode(lat, lng),
+    prisma.gabAtm.findUnique({ where: { id }, select: { logo: true } }),
+  ])
+  const logo = remove ? null : (newLogo ?? existing?.logo ?? null)
+
+  await prisma.gabAtm.update({
+    where: { id },
+    data: { city, location, logo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null },
+  })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/gab')
+  done()
   return { success: true }
 }
 
@@ -295,41 +343,57 @@ export async function deleteGabAction(formData) {
 // ─── Partners ─────────────────────────────────────────────────────────────────
 
 export async function createPartnerAction(_prevState, formData) {
+  const done = timer('createPartner')
   const name        = formData.get('name')?.trim()
   const category    = formData.get('category')?.trim() || ''
   const description = formData.get('description')?.trim() || ''
-  const newLogoFile = formData.get('logo')
+  const lat         = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng         = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const logoFromUrl = formData.get('logoUrl')
-  const savedLogo = await saveLogo(newLogoFile)
-  const logo        = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
-  const lat         = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng         = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address     = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+
   if (!name) return { error: 'Le nom est requis.' }
-  const count = await prisma.partner.count()
-  await prisma.partner.create({ data: { name, category, description, logo, lat, lng, address, order: count } })
+
+  const [savedLogo, address, count] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    reverseGeocode(lat, lng),
+    prisma.partner.count(),
+  ])
+  const logo = savedLogo ?? (typeof logoFromUrl === 'string' ? logoFromUrl : null)
+
+  await prisma.partner.create({
+    data: { name, category, description, logo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
+  })
   revalidatePath('/admin/reseau/partenaires')
+  done()
   return { success: true }
 }
 
 export async function updatePartnerAction(_prevState, formData) {
+  const done = timer('updatePartner')
   const id          = formData.get('id')
   const name        = formData.get('name')?.trim()
   const category    = formData.get('category')?.trim() || ''
   const description = formData.get('description')?.trim() || ''
-  const newLogo     = await saveLogo(formData.get('logo'))
+  const lat         = formData.get('lat') ? parseFloat(formData.get('lat')) : null
+  const lng         = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const remove      = formData.get('removeLogo')
-  const existing    = await prisma.partner.findUnique({ where: { id }, select: { logo: true } })
-  const logo        = remove ? null : (newLogo ?? existing?.logo ?? null)
-  const lat         = formData.get('lat')  ? parseFloat(formData.get('lat'))  : null
-  const lng         = formData.get('lng')  ? parseFloat(formData.get('lng'))  : null
-  const address     = (await reverseGeocode(lat, lng)) ?? formData.get('address')?.trim() ?? null
+
   if (!name) return { error: 'Le nom est requis.' }
-  await prisma.partner.update({ where: { id }, data: { name, category, description, logo, lat, lng, address } })
-  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) {
-    await deleteLogoFile(existing.logo)
-  }
+
+  const [newLogo, address, existing] = await Promise.all([
+    saveLogo(formData.get('logo')),
+    reverseGeocode(lat, lng),
+    prisma.partner.findUnique({ where: { id }, select: { logo: true } }),
+  ])
+  const logo = remove ? null : (newLogo ?? existing?.logo ?? null)
+
+  await prisma.partner.update({
+    where: { id },
+    data: { name, category, description, logo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null },
+  })
+  if ((remove || newLogo) && existing?.logo && existing.logo !== logo) await deleteLogoFile(existing.logo)
   revalidatePath('/admin/reseau/partenaires')
+  done()
   return { success: true }
 }
 

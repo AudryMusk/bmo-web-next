@@ -10,6 +10,15 @@ import { Button } from '@/components/ui/button'
 
 export const revalidate = 60
 
+export async function generateStaticParams() {
+  const { prisma } = await import('@/lib/prisma')
+  const articles = await prisma.article.findMany({
+    where: { status: 'publie' },
+    select: { slug: true },
+  })
+  return articles.map(a => ({ slug: a.slug }))
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const article = await getBlogPostBySlug(slug)

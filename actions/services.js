@@ -30,9 +30,10 @@ export async function updateServiceAction(_prevState, formData) {
 
   const { id, title, description, icon, features } = parsed.data
 
+  const existing = await prisma.service.findUnique({ where: { id }, select: { icon: true } })
   await prisma.service.update({
     where: { id },
-    data: { title, description, icon, features: parseLines(features) },
+    data: { title, description, icon: icon || existing?.icon || '', features: parseLines(features) },
   })
 
   revalidatePath('/services/particuliers')

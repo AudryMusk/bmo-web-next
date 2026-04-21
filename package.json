@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "next dev --port 4502",
+    "dev": "next dev --port 4502 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

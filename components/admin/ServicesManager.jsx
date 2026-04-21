@@ -2,13 +2,19 @@
 
 import { useActionState } from 'react'
 import { useState, useEffect } from 'react'
-import { Pencil, X, Check, ChevronDown, ChevronUp, Plus, Trash2, icons as LucideIcons } from 'lucide-react'
+import { Pencil, X, Check, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 
 function ServiceIcon({ name }) {
+  const [Icon, setIcon] = useState(null)
+  useEffect(() => {
+    if (!name) return
+    import('lucide-react').then(mod => {
+      setIcon(() => mod[name] ?? null)
+    })
+  }, [name])
   if (!name) return null
-  const Icon = LucideIcons[name]
-  if (Icon) return <Icon size={18} className="text-primary shrink-0" />
-  return <span className="text-lg shrink-0">{name}</span>
+  if (!Icon) return <span className="w-[18px] h-[18px] shrink-0" />
+  return <Icon size={18} className="text-primary shrink-0" />
 }
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

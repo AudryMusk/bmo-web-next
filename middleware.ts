@@ -17,9 +17,11 @@ const ALL_PERMISSION_KEYS = APP_PERMISSIONS.map(p => p.slug)
  */
 async function fetchUserPermissions(token: string): Promise<string[] | null> {
   try {
-    const res = await fetch(`${USER_MODULE_URL}/auth/me/${APP_ID}`, {
+    // Token inclus dans l'URL pour avoir une clé de cache unique par utilisateur.
+    // revalidate: 60 = 1 seul appel réseau par minute au lieu d'un par requête.
+    const res = await fetch(`${USER_MODULE_URL}/auth/me/${APP_ID}?_t=${encodeURIComponent(token)}`, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 60 },
     })
     if (!res.ok) return null
     const data = await res.json()
