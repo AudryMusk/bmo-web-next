@@ -139,6 +139,7 @@ model Marchand {
   country    String  @default("Bénin")
   department String?
   city       String?
+  quartier   String?
   lat        Float?
   lng        Float?
   address    String?

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { useState, useEffect, useRef } from 'react'
+import geoData from '@/data/benin-geo.json'
 import { Plus, Pencil, Trash2, X, Check, ImageIcon, MapPin, Map, Upload, Download, CheckCircle2 as CheckCircle, AlertTriangle, Link2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -75,7 +76,58 @@ function PhotoUpload({ currentPhoto }) {
   return <ImageUpload fieldName="photo" removeFieldName="removePhoto" label="Photo façade agence (optionnel)" currentValue={currentPhoto} previewClass="object-cover" />
 }
 
+const SELECT_CLASS = 'h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors w-full'
+
+function GeoSelect({ defaultValue }) {
+  const allDepts = Object.keys(geoData).sort()
+  const [dept, setDept]       = useState(defaultValue?.department ?? '')
+  const [city, setCity]       = useState(defaultValue?.city ?? '')
+  const [quartier, setQuartier] = useState(defaultValue?.quartier ?? '')
+
+  const cities   = dept ? Object.keys(geoData[dept] ?? {}).sort() : []
+  const quartiers = dept && city ? (geoData[dept]?.[city] ?? []) : []
+
+  function handleDept(v) {
+    setDept(v)
+    setCity('')
+    setQuartier('')
+  }
+  function handleCity(v) {
+    setCity(v)
+    setQuartier('')
+  }
+
+  return (
+    <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="flex flex-col gap-0.5">
+        <label className="text-xs font-medium text-slate-600">Département</label>
+        <select name="department" value={dept} onChange={e => handleDept(e.target.value)} className={SELECT_CLASS}>
+          <option value="">— Choisir —</option>
+          {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-xs font-medium text-slate-600">Ville</label>
+        <select name="city" value={city} onChange={e => handleCity(e.target.value)} disabled={!dept} className={SELECT_CLASS}>
+          <option value="">— Choisir —</option>
+          {cities.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <label className="text-xs font-medium text-slate-600">Quartier</label>
+        <select name="quartier" value={quartier} onChange={e => setQuartier(e.target.value)} disabled={!city} className={SELECT_CLASS}>
+          <option value="">— Choisir —</option>
+          {quartiers.map(q => <option key={q} value={q}>{q}</option>)}
+        </select>
+      </div>
+    </div>
+  )
+}
+
 function Field({ field, defaultValue }) {
+  if (field.type === 'geo-select') {
+    return <GeoSelect defaultValue={defaultValue} />
+  }
   if (field.type === 'textarea') {
     return (
       <div className="flex flex-col gap-0.5">
@@ -117,7 +169,7 @@ function EditRow({ item, fields, updateAction, onCancel, showPhoto }) {
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{state.error}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {fields.map(f => <Field key={f.name} field={f} defaultValue={item[f.name]} />)}
+        {fields.map(f => <Field key={f.name ?? f.type} field={f} defaultValue={f.type === 'geo-select' ? item : item[f.name]} />)}
       </div>
       <div className={showPhoto ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : ''}>
         <LogoUpload currentLogo={item.logo ?? null} />
@@ -149,7 +201,7 @@ function AddRow({ fields, createAction, onCancel, showPhoto }) {
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{state.error}</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {fields.map(f => <Field key={f.name} field={f} defaultValue="" />)}
+        {fields.map(f => <Field key={f.name ?? f.type} field={f} defaultValue={f.type === 'geo-select' ? null : ''} />)}
       </div>
       <div className={showPhoto ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : ''}>
         <LogoUpload currentLogo={null} />

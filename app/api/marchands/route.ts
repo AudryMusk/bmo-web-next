@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
       phone: true,
       email: true,
       city: true,
+      quartier: true,
       department: true,
       country: true,
       lat: true,

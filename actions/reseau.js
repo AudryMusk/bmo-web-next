@@ -119,6 +119,7 @@ export async function createMarchandAction(_prevState, formData) {
   const country    = formData.get('country')?.trim() || 'Bénin'
   const department = formData.get('department')?.trim() || null
   const city       = formData.get('city')?.trim() || null
+  const quartier   = formData.get('quartier')?.trim() || null
   const lat        = formData.get('lat') ? parseFloat(formData.get('lat')) : null
   const lng        = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const logoFromUrl  = formData.get('logoUrl')
@@ -136,7 +137,7 @@ export async function createMarchandAction(_prevState, formData) {
   const photo = savedPhoto ?? (typeof photoFromUrl === 'string' ? photoFromUrl : null)
 
   await prisma.marchand.create({
-    data: { name, phone, email, country, department, city, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
+    data: { name, phone, email, country, department, city, quartier, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
   })
   revalidatePath('/admin/reseau/marchands')
   done()
@@ -152,6 +153,7 @@ export async function updateMarchandAction(_prevState, formData) {
   const country    = formData.get('country')?.trim() || 'Bénin'
   const department = formData.get('department')?.trim() || null
   const city       = formData.get('city')?.trim() || null
+  const quartier   = formData.get('quartier')?.trim() || null
   const lat        = formData.get('lat') ? parseFloat(formData.get('lat')) : null
   const lng        = formData.get('lng') ? parseFloat(formData.get('lng')) : null
   const removeLogo  = formData.get('removeLogo')
@@ -170,7 +172,7 @@ export async function updateMarchandAction(_prevState, formData) {
 
   await prisma.marchand.update({
     where: { id },
-    data: { name, phone, email, country, department, city, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null },
+    data: { name, phone, email, country, department, city, quartier, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null },
   })
   if ((removeLogo  || newLogo)  && existing?.logo  && existing.logo  !== logo)  await deleteLogoFile(existing.logo)
   if ((removePhoto || newPhoto) && existing?.photo && existing.photo !== photo) await deleteLogoFile(existing.photo)
@@ -196,7 +198,7 @@ export async function importMarchandsAction(rows) {
     const row = rows[i]
     const line = i + 2
 
-    const missingFields = ['name', 'phone', 'email', 'country', 'department', 'city'].filter(f => !row[f]?.trim())
+    const missingFields = ['name', 'phone', 'email', 'country', 'department', 'city', 'quartier'].filter(f => !row[f]?.trim())
     if (missingFields.length > 0) {
       errors.push({ line, name: row.name?.trim() || '(vide)', reason: `Champs obligatoires manquants : ${missingFields.join(', ')}` })
       continue
@@ -219,7 +221,7 @@ export async function importMarchandsAction(rows) {
         data: {
           name: row.name.trim(), phone: row.phone?.trim() || '', email: row.email?.trim() || '',
           country: row.country?.trim() || 'Bénin', department: row.department?.trim() || null,
-          city: row.city?.trim() || null,
+          city: row.city?.trim() || null, quartier: row.quartier?.trim() || null,
           lat: row.lat ? parseFloat(row.lat) : null, lng: row.lng ? parseFloat(row.lng) : null,
           active: false, order: order++,
         },
