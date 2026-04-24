@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { MapPin, Navigation, ArrowLeft, Camera, CheckCircle2, AlertCircle, RefreshCw, ChevronRight, Store, Loader2 } from 'lucide-react'
 import { submitMarchandLocationAction } from '@/actions/reseau'
+import MobileOnlyGate from '@/components/MobileOnlyGate'
 
 type Step = 'welcome' | 'gps' | 'photo' | 'submitting' | 'done' | 'error'
 
@@ -169,6 +170,7 @@ export default function InscriptionClient({ marchand }: { marchand: Marchand }) 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-start p-4 py-8">
+      <MobileOnlyGate />
       <div className="w-full max-w-md">
 
         {/* Logo */}

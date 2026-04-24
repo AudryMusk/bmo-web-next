@@ -140,6 +140,7 @@ export async function createMarchandAction(_prevState, formData) {
     data: { name, phone, email, country, department, city, quartier, logo, photo, lat, lng, address: address ?? formData.get('address')?.trim() ?? null, order: count },
   })
   revalidatePath('/admin/reseau/marchands')
+  revalidatePath('/admin/reseau/distributeurs')
   done()
   return { success: true }
 }
@@ -177,6 +178,7 @@ export async function updateMarchandAction(_prevState, formData) {
   if ((removeLogo  || newLogo)  && existing?.logo  && existing.logo  !== logo)  await deleteLogoFile(existing.logo)
   if ((removePhoto || newPhoto) && existing?.photo && existing.photo !== photo) await deleteLogoFile(existing.photo)
   revalidatePath('/admin/reseau/marchands')
+  revalidatePath('/admin/reseau/distributeurs')
   done()
   return { success: true }
 }

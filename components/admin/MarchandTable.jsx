@@ -241,6 +241,21 @@ function TH({ children, className = '' }) {
 
 const CSV_FIELDS = ['name', 'phone', 'email', 'country', 'department', 'city', 'quartier', 'lat', 'lng']
 const COL_COUNT  = 10  // checkbox + 8 data cols + actions
+const PAGE_SIZE  = 25
+
+function getPaginationPages(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages = new Set([1, total, current, current - 1, current + 1].filter(p => p >= 1 && p <= total))
+  const sorted = [...pages].sort((a, b) => a - b)
+  const result = []
+  let prev = 0
+  for (const p of sorted) {
+    if (p - prev > 1) result.push('…')
+    result.push(p)
+    prev = p
+  }
+  return result
+}
 
 export default function MarchandTable({ title, items, createAction, updateAction, deleteAction, importAction, bulkActiveAction, bulkDeleteAction, shareLinkBase, mapHref }) {
   const router = useRouter()
@@ -256,10 +271,15 @@ export default function MarchandTable({ title, items, createAction, updateAction
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
 
+  const [page, setPage]                       = useState(1)
   const [selectedIds, setSelectedIds]         = useState(new Set())
   const [bulkLoading, setBulkLoading]         = useState(false)
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
   const [copiedId, setCopiedId]               = useState(null)
+
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
+  const safePage   = Math.min(page, totalPages)
+  const pageItems  = items.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   function copyShareLink(item) {
     const url = `${window.location.origin}${shareLinkBase}/${item.token}`
@@ -272,7 +292,13 @@ export default function MarchandTable({ title, items, createAction, updateAction
     setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   }
   function toggleAll() {
-    setSelectedIds(prev => prev.size === items.length ? new Set() : new Set(items.map(i => i.id)))
+    const pageIds = pageItems.map(i => i.id)
+    const allSelected = pageIds.every(id => selectedIds.has(id))
+    setSelectedIds(prev => {
+      const n = new Set(prev)
+      allSelected ? pageIds.forEach(id => n.delete(id)) : pageIds.forEach(id => n.add(id))
+      return n
+    })
   }
   async function bulkSetActive(active) {
     if (!bulkActiveAction || selectedIds.size === 0) return
@@ -288,8 +314,22 @@ export default function MarchandTable({ title, items, createAction, updateAction
     await bulkDeleteAction([...selectedIds])
     setSelectedIds(new Set())
     setBulkDeleteConfirm(false)
+    setPage(1)
     router.refresh()
     setBulkLoading(false)
+  }
+  function exportCsv() {
+    const header = CSV_FIELDS.join(';')
+    const rowLines = items.map(item =>
+      CSV_FIELDS.map(f => {
+        const v = String(item[f] ?? '')
+        return v.includes(';') || v.includes('"') || v.includes('\n') ? `"${v.replace(/"/g, '""')}"` : v
+      }).join(';')
+    )
+    const blob = new Blob([header + '\n' + rowLines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'marchands.csv'; a.click()
+    URL.revokeObjectURL(url)
   }
   function downloadTemplate() {
     const blob = new Blob([CSV_FIELDS.join(',') + '\n'], { type: 'text/csv;charset=utf-8;' })
@@ -313,7 +353,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
     try {
       const result = await importAction(csvRows)
       setImportResult(result)
-      if (result?.success) { setCsvRows(null); router.refresh() }
+      if (result?.success) { setCsvRows(null); setPage(1); router.refresh() }
     } catch {
       setImportResult({ error: "Erreur inattendue lors de l'import." })
     } finally { setImporting(false) }
@@ -334,6 +374,11 @@ export default function MarchandTable({ title, items, createAction, updateAction
               <Map size={14} /> Voir la carte
             </Link>
           )}
+          {items.length > 0 && (
+            <button onClick={exportCsv} className="inline-flex items-center gap-1.5 text-sm font-medium h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer bg-transparent">
+              <Download size={14} /> Exporter CSV
+            </button>
+          )}
           {importAction && (
             <>
               <button onClick={downloadTemplate} className="inline-flex items-center gap-1.5 text-sm font-medium h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer bg-transparent">
@@ -345,7 +390,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
               <input ref={csvInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleCsvFile} />
             </>
           )}
-          <Button size="sm" onClick={() => { setAdding(true); setEditingId(null) }} className="cursor-pointer gap-1.5 bg-primary hover:bg-primary-hover text-white border-none">
+          <Button size="sm" onClick={() => setAdding(true)} className="cursor-pointer gap-1.5 bg-primary hover:bg-primary-hover text-white border-none">
             <Plus size={14} /> Ajouter
           </Button>
         </div>
@@ -458,7 +503,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
                 <th className="pl-4 pr-2 py-2.5 w-8">
                   <input
                     type="checkbox"
-                    checked={selectedIds.size === items.length && items.length > 0}
+                    checked={pageItems.length > 0 && pageItems.every(i => selectedIds.has(i.id))}
                     onChange={toggleAll}
                     className="w-3.5 h-3.5 cursor-pointer accent-primary"
                   />
@@ -483,7 +528,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
                 </td>
               </tr>
             )}
-            {items.map(item => (
+            {pageItems.map(item => (
                 <tr key={item.id}
                   className={`group transition-colors hover:bg-slate-50/80 ${selectedIds.has(item.id) ? 'bg-primary/5' : ''}`}
                 >
@@ -563,8 +608,46 @@ export default function MarchandTable({ title, items, createAction, updateAction
         </table>
       </div>
 
+      {/* ── Pagination ── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">
+            {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, items.length)} sur {items.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(p => p - 1)}
+              disabled={safePage === 1}
+              className="h-7 px-2.5 rounded-md text-xs font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed bg-white text-slate-700 cursor-pointer transition-colors"
+            >
+              ←
+            </button>
+            {getPaginationPages(safePage, totalPages).map((p, i) =>
+              p === '…'
+                ? <span key={`ellipsis-${i}`} className="px-1 text-xs text-slate-400">…</span>
+                : <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`h-7 w-7 rounded-md text-xs font-medium transition-colors cursor-pointer border ${
+                      p === safePage
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >{p}</button>
+            )}
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={safePage === totalPages}
+              className="h-7 px-2.5 rounded-md text-xs font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed bg-white text-slate-700 cursor-pointer transition-colors"
+            >
+              →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Edit modal ── */}
-      <MarchandEditModal item={editItem} updateAction={updateAction} onClose={() => setEditItem(null)} />
+      <MarchandEditModal key={editItem?.id} item={editItem} updateAction={updateAction} onClose={() => setEditItem(null)} />
 
       {/* ── Bulk delete confirm ── */}
       <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
