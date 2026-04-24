@@ -199,16 +199,26 @@ function MarchandEditModal({ item, updateAction, onClose }) {
 
 // ─── CSV helpers ──────────────────────────────────────────────────────────────
 
+// Maps alternate column names from user files to internal field names
+const COL_ALIASES = { departement: 'department', long: 'lng' }
+
 function parseCsv(text) {
   const lines = text.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean)
   if (lines.length < 2) return { rows: [], error: 'Fichier vide ou sans données.' }
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+
+  // Auto-detect separator: use ';' if it appears more than ',' in the header
+  const firstLine = lines[0]
+  const sep = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ','
+
+  const rawHeaders = firstLine.split(sep).map(h => h.trim().replace(/^"|"$/g, ''))
+  const headers = rawHeaders.map(h => COL_ALIASES[h.toLowerCase()] ?? h.toLowerCase())
+
   const rows = lines.slice(1).map(line => {
     const values = []
     let cur = '', inQ = false
     for (const ch of line) {
       if (ch === '"') inQ = !inQ
-      else if (ch === ',' && !inQ) { values.push(cur.trim()); cur = '' }
+      else if (ch === sep && !inQ) { values.push(cur.trim()); cur = '' }
       else cur += ch
     }
     values.push(cur.trim())
@@ -232,7 +242,7 @@ function TH({ children, className = '' }) {
 const CSV_FIELDS = ['name', 'phone', 'email', 'country', 'department', 'city', 'quartier', 'lat', 'lng']
 const COL_COUNT  = 10  // checkbox + 8 data cols + actions
 
-export default function MarchandTable({ title, items, createAction, updateAction, deleteAction, importAction, bulkActiveAction, shareLinkBase, mapHref }) {
+export default function MarchandTable({ title, items, createAction, updateAction, deleteAction, importAction, bulkActiveAction, bulkDeleteAction, shareLinkBase, mapHref }) {
   const router = useRouter()
   const { withLoading } = useWithLoading()
 
@@ -246,9 +256,10 @@ export default function MarchandTable({ title, items, createAction, updateAction
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
 
-  const [selectedIds, setSelectedIds] = useState(new Set())
-  const [bulkLoading, setBulkLoading] = useState(false)
-  const [copiedId, setCopiedId]       = useState(null)
+  const [selectedIds, setSelectedIds]         = useState(new Set())
+  const [bulkLoading, setBulkLoading]         = useState(false)
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [copiedId, setCopiedId]               = useState(null)
 
   function copyShareLink(item) {
     const url = `${window.location.origin}${shareLinkBase}/${item.token}`
@@ -268,6 +279,15 @@ export default function MarchandTable({ title, items, createAction, updateAction
     setBulkLoading(true)
     await bulkActiveAction([...selectedIds], active)
     setSelectedIds(new Set())
+    router.refresh()
+    setBulkLoading(false)
+  }
+  async function bulkDelete() {
+    if (!bulkDeleteAction || selectedIds.size === 0) return
+    setBulkLoading(true)
+    await bulkDeleteAction([...selectedIds])
+    setSelectedIds(new Set())
+    setBulkDeleteConfirm(false)
     router.refresh()
     setBulkLoading(false)
   }
@@ -300,7 +320,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 w-full min-w-0">
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-3">
@@ -419,6 +439,11 @@ export default function MarchandTable({ title, items, createAction, updateAction
             <button onClick={() => bulkSetActive(false)} disabled={bulkLoading} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 disabled:opacity-50 text-white border-none cursor-pointer transition-colors">
               <X size={12} /> Désactiver
             </button>
+            {bulkDeleteAction && (
+              <button onClick={() => setBulkDeleteConfirm(true)} disabled={bulkLoading} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white border-none cursor-pointer transition-colors">
+                <Trash2 size={12} /> Supprimer
+              </button>
+            )}
             <button onClick={() => setSelectedIds(new Set())} className="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer ml-1"><X size={14} /></button>
           </div>
         </div>
@@ -540,6 +565,22 @@ export default function MarchandTable({ title, items, createAction, updateAction
 
       {/* ── Edit modal ── */}
       <MarchandEditModal item={editItem} updateAction={updateAction} onClose={() => setEditItem(null)} />
+
+      {/* ── Bulk delete confirm ── */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {selectedIds.size} marchand{selectedIds.size !== 1 ? 's' : ''} ?</AlertDialogTitle>
+            <AlertDialogDescription>Cette action est irréversible. Tous les logos et photos associés seront également supprimés.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Annuler</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700 cursor-pointer" onClick={bulkDelete} disabled={bulkLoading}>
+              {bulkLoading ? 'Suppression…' : 'Supprimer'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Delete dialog ── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>

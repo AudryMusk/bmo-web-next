@@ -5,6 +5,7 @@ import {
   deleteMarchandAction,
   importMarchandsAction,
   bulkSetActiveMarchandsAction,
+  bulkDeleteMarchandsAction,
 } from '@/actions/reseau'
 import MarchandTable from '@/components/admin/MarchandTable'
 
@@ -21,6 +22,7 @@ export default async function MarchandsPage() {
       deleteAction={deleteMarchandAction}
       importAction={importMarchandsAction}
       bulkActiveAction={bulkSetActiveMarchandsAction}
+      bulkDeleteAction={bulkDeleteMarchandsAction}
       shareLinkBase="/inscription-marchand"
       mapHref="/admin/reseau/distributeurs/carte"
     />

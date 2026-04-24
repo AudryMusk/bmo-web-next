@@ -198,7 +198,7 @@ export async function importMarchandsAction(rows) {
     const row = rows[i]
     const line = i + 2
 
-    const missingFields = ['name', 'phone', 'email', 'country', 'department', 'city', 'quartier'].filter(f => !row[f]?.trim())
+    const missingFields = ['name', 'phone', 'email', 'country', 'quartier'].filter(f => !row[f]?.trim())
     if (missingFields.length > 0) {
       errors.push({ line, name: row.name?.trim() || '(vide)', reason: `Champs obligatoires manquants : ${missingFields.join(', ')}` })
       continue
@@ -266,6 +266,18 @@ export async function submitMarchandLocationAction(_prevState, formData) {
 export async function bulkSetActiveMarchandsAction(ids, active) {
   if (!Array.isArray(ids) || ids.length === 0) return
   await prisma.marchand.updateMany({ where: { id: { in: ids } }, data: { active } })
+  revalidatePath('/admin/reseau/marchands')
+  revalidatePath('/admin/reseau/distributeurs')
+}
+
+export async function bulkDeleteMarchandsAction(ids) {
+  if (!Array.isArray(ids) || ids.length === 0) return
+  const existing = await prisma.marchand.findMany({ where: { id: { in: ids } }, select: { logo: true, photo: true } })
+  await prisma.marchand.deleteMany({ where: { id: { in: ids } } })
+  await Promise.all(existing.flatMap(m => [
+    m.logo  ? deleteLogoFile(m.logo)  : null,
+    m.photo ? deleteLogoFile(m.photo) : null,
+  ].filter(Boolean)))
   revalidatePath('/admin/reseau/marchands')
   revalidatePath('/admin/reseau/distributeurs')
 }

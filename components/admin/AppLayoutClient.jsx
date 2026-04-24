@@ -8,10 +8,10 @@ export default function AppLayoutClient({ children, logoutAction, userName }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50">
 
       {/* Sidebar desktop */}
-      <div className="hidden md:flex sticky top-0 h-screen shrink-0">
+      <div className="hidden md:flex h-screen shrink-0">
         <SidebarClient logoutAction={logoutAction} userName={userName} />
       </div>
 
@@ -33,7 +33,7 @@ export default function AppLayoutClient({ children, logoutAction, userName }) {
       )}
 
       {/* Contenu principal */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <TopbarClient onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {children}
