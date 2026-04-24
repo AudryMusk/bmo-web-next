@@ -188,13 +188,17 @@ export async function importMarchandsAction(rows) {
   if (!Array.isArray(rows) || rows.length === 0) return { error: 'Aucune donnée à importer.' }
 
   const [existing, count] = await Promise.all([
-    prisma.marchand.findMany({ select: { name: true } }),
+    prisma.marchand.findMany({ select: { name: true, phone: true, email: true, city: true, quartier: true } }),
     prisma.marchand.count(),
   ])
-  const existingNames = new Set(existing.map(m => m.name.trim().toLowerCase()))
+  const existingNames    = new Set(existing.map(m => m.name.trim().toLowerCase()))
+  const existingByPhone  = new Map(existing.filter(m => m.phone).map(m => [m.phone.trim(), m]))
+  const existingByEmail  = new Map(existing.filter(m => m.email).map(m => [m.email.trim().toLowerCase(), m]))
 
   let order = count
-  const added = [], skipped = [], errors = []
+  const added = [], skipped = [], errors = [], warnings = []
+  const batchPhones = new Map() // phone -> name (déjà vu dans ce fichier)
+  const batchEmails = new Map() // email -> name
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
@@ -218,6 +222,31 @@ export async function importMarchandsAction(rows) {
       errors.push({ line, name: row.name.trim(), reason: `Longitude invalide : "${row.lng}"` })
       continue
     }
+
+    // ── Détection doublon probable ──────────────────────────────────────────
+    const rPhone = row.phone?.trim()
+    const rEmail = row.email?.trim().toLowerCase()
+    const rCity  = row.city?.trim().toLowerCase()
+    const rQuart = row.quartier?.trim().toLowerCase()
+
+    if (rPhone && batchPhones.has(rPhone)) {
+      warnings.push({ line, name: row.name.trim(), reason: `Même téléphone que "${batchPhones.get(rPhone)}" dans ce fichier` })
+    } else if (rEmail && batchEmails.has(rEmail)) {
+      warnings.push({ line, name: row.name.trim(), reason: `Même email que "${batchEmails.get(rEmail)}" dans ce fichier` })
+    } else {
+      const dbMatch = (rPhone && existingByPhone.get(rPhone)) || (rEmail && existingByEmail.get(rEmail))
+      if (dbMatch) {
+        const sameLocation = (rCity && dbMatch.city?.toLowerCase() === rCity) || (rQuart && dbMatch.quartier?.toLowerCase() === rQuart)
+        if (sameLocation) {
+          const field = rPhone && existingByPhone.has(rPhone) ? 'téléphone' : 'email'
+          warnings.push({ line, name: row.name.trim(), reason: `Similaire à "${dbMatch.name}" en base (même ${field} et localisation)` })
+        }
+      }
+    }
+    if (rPhone) batchPhones.set(rPhone, row.name.trim())
+    if (rEmail) batchEmails.set(rEmail, row.name.trim())
+    // ───────────────────────────────────────────────────────────────────────
+
     try {
       await prisma.marchand.create({
         data: {
@@ -238,7 +267,7 @@ export async function importMarchandsAction(rows) {
   revalidatePath('/admin/reseau/marchands')
   revalidatePath('/admin/reseau/distributeurs')
   done()
-  return { success: true, added, skipped, errors, total: rows.length }
+  return { success: true, added, skipped, warnings, errors, total: rows.length }
 }
 
 export async function submitMarchandLocationAction(_prevState, formData) {

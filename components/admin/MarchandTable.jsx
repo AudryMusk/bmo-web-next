@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback, memo, useId } from 'react'
 import {
   Plus, Pencil, Trash2, X, Check, ImageIcon, MapPin, Map,
   Upload, Download, CheckCircle2 as CheckCircle, AlertTriangle,
-  Link2,
+  Link2, Users,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -305,6 +305,28 @@ function TH({ children, className = '' }) {
   )
 }
 
+// ─── Duplicate detection ──────────────────────────────────────────────────────
+
+function detectDuplicates(items) {
+  const byPhone = {}, byEmail = {}
+  for (const item of items) {
+    const p = item.phone?.trim()
+    const e = item.email?.trim().toLowerCase()
+    if (p) { byPhone[p] = byPhone[p] || []; byPhone[p].push(item) }
+    if (e) { byEmail[e] = byEmail[e] || []; byEmail[e].push(item) }
+  }
+  const seen = new Set()
+  const groups = []
+  for (const group of [...Object.values(byPhone), ...Object.values(byEmail)]) {
+    if (group.length < 2) continue
+    const key = group.map(i => i.id).sort().join('|')
+    if (seen.has(key)) continue
+    seen.add(key)
+    groups.push(group)
+  }
+  return groups
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const CSV_FIELDS = ['name', 'phone', 'email', 'country', 'department', 'city', 'quartier', 'lat', 'lng']
@@ -341,6 +363,8 @@ export default function MarchandTable({ title, items, createAction, updateAction
   const [importResult, setImportResult] = useState(null)
 
   const [page, setPage]                       = useState(1)
+  const [showDuplicates, setShowDuplicates]   = useState(false)
+  const [showExportPreview, setShowExportPreview] = useState(false)
   const [selectedIds, setSelectedIds]         = useState(new Set())
   const [bulkLoading, setBulkLoading]         = useState(false)
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
@@ -457,8 +481,16 @@ export default function MarchandTable({ title, items, createAction, updateAction
               <Map size={14} /> Voir la carte
             </Link>
           )}
+          {items.length > 0 && (() => {
+            const dupCount = detectDuplicates(items).length
+            return dupCount > 0 ? (
+              <button onClick={() => setShowDuplicates(v => !v)} className={`inline-flex items-center gap-1.5 text-sm font-medium h-8 px-3 rounded-lg border transition-colors cursor-pointer bg-transparent ${showDuplicates ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-orange-200 hover:border-orange-300 hover:bg-orange-50 text-orange-600'}`}>
+                <Users size={14} /> {dupCount} doublon{dupCount !== 1 ? 's' : ''}
+              </button>
+            ) : null
+          })()}
           {items.length > 0 && (
-            <button onClick={exportCsv} className="inline-flex items-center gap-1.5 text-sm font-medium h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer bg-transparent">
+            <button onClick={() => setShowExportPreview(v => !v)} className={`inline-flex items-center gap-1.5 text-sm font-medium h-8 px-3 rounded-lg border transition-colors cursor-pointer bg-transparent ${showExportPreview ? 'border-slate-300 bg-slate-100 text-slate-800' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'}`}>
               <Download size={14} /> Exporter CSV
             </button>
           )}
@@ -486,6 +518,99 @@ export default function MarchandTable({ title, items, createAction, updateAction
           <button onClick={() => setCsvError(null)} className="ml-auto text-red-400 hover:text-red-600 bg-transparent border-none cursor-pointer"><X size={14} /></button>
         </div>
       )}
+
+      {/* ── Panneau doublons existants ── */}
+      {showDuplicates && (() => {
+        const groups = detectDuplicates(items)
+        if (groups.length === 0) return null
+        return (
+          <div className="flex flex-col gap-3 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-orange-800 flex items-center gap-1.5">
+                <Users size={15} /> {groups.length} groupe{groups.length !== 1 ? 's' : ''} de doublons probables
+              </p>
+              <button onClick={() => setShowDuplicates(false)} className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><X size={14} /></button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {groups.map((group, gi) => (
+                <div key={gi} className="bg-white rounded-lg border border-orange-200 overflow-hidden">
+                  <div className="px-3 py-1.5 bg-orange-100 text-[10px] font-semibold text-orange-700 uppercase tracking-wide">
+                    Groupe {gi + 1} — {group[0].phone || group[0].email}
+                  </div>
+                  {group.map(item => (
+                    <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 border-t border-orange-100 first:border-t-0">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-medium text-slate-900 truncate">{item.name}</span>
+                        <span className="text-[10px] text-slate-400">{[item.quartier, item.city, item.department].filter(Boolean).join(' · ')}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => { setEditItem(item); setShowDuplicates(false) }}
+                          className="h-6 px-2 text-[10px] font-medium rounded bg-slate-100 hover:bg-slate-200 text-slate-600 border-none cursor-pointer transition-colors"
+                        >
+                          Modifier
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(item)}
+                          className="h-6 px-2 text-[10px] font-medium rounded bg-red-100 hover:bg-red-200 text-red-600 border-none cursor-pointer transition-colors"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ── Export preview ── */}
+      {showExportPreview && (() => {
+        const dupGroups = detectDuplicates(items)
+        const dupItemCount = new Set(dupGroups.flat().map(i => i.id)).size
+        return (
+          <div className="flex flex-col gap-3 p-4 bg-white border border-slate-200 rounded-xl">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                <Download size={15} className="text-slate-500" />
+                Export CSV — {items.length} marchand{items.length !== 1 ? 's' : ''}
+                {dupGroups.length > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                    <Users size={10} /> {dupItemCount} doublon{dupItemCount !== 1 ? 's' : ''} probable{dupItemCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </p>
+              <button onClick={() => setShowExportPreview(false)} className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><X size={14} /></button>
+            </div>
+
+            {dupGroups.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-slate-500">{dupGroups.length} groupe{dupGroups.length !== 1 ? 's' : ''} avec le même téléphone ou email :</p>
+                {dupGroups.map((group, gi) => (
+                  <div key={gi} className="flex items-start gap-2 px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 text-[10px] font-bold rounded-full bg-orange-200 text-orange-800 shrink-0 mt-0.5">
+                      {group.length}
+                    </span>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-[10px] font-semibold text-orange-700">{group[0].phone || group[0].email}</span>
+                      <span className="text-[10px] text-slate-500">{group.map(i => i.name).join(' · ')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end pt-1">
+              <Button variant="ghost" size="sm" onClick={() => setShowExportPreview(false)} className="cursor-pointer"><X size={13} /> Annuler</Button>
+              <button onClick={() => { exportCsv(); setShowExportPreview(false) }} className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white border-none cursor-pointer transition-colors">
+                <Download size={13} /> Télécharger le CSV
+              </button>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── CSV preview ── */}
       {csvRows && csvHeaders && !importResult && (
@@ -537,6 +662,12 @@ export default function MarchandTable({ title, items, createAction, updateAction
             <div className="flex flex-col gap-1">
               <p className="text-xs font-semibold text-amber-600 flex items-center gap-1"><AlertTriangle size={12} /> {importResult.skipped.length} ignoré{importResult.skipped.length !== 1 ? 's' : ''} (doublons)</p>
               {importResult.skipped.map((r, i) => <p key={i} className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-0.5">Ligne {r.line} — {r.name} : {r.reason}</p>)}
+            </div>
+          )}
+          {importResult.warnings?.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold text-orange-600 flex items-center gap-1"><Users size={12} /> {importResult.warnings.length} doublon{importResult.warnings.length !== 1 ? 's' : ''} probable{importResult.warnings.length !== 1 ? 's' : ''} (importé{importResult.warnings.length !== 1 ? 's' : ''} quand même)</p>
+              {importResult.warnings.map((r, i) => <p key={i} className="text-xs text-orange-700 bg-orange-50 rounded px-2 py-0.5">Ligne {r.line} — {r.name} : {r.reason}</p>)}
             </div>
           )}
           {importResult.errors?.length > 0 && (

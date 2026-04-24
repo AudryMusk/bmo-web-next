@@ -487,7 +487,7 @@ export default function NetworkManager({ title, items, fields, displayConfig, cr
 
           {importResult.skipped?.length > 0 && (
             <div className="flex flex-col gap-1">
-              <p className="text-xs font-semibold text-amber-600 flex items-center gap-1"><AlertTriangle size={12} /> {importResult.skipped.length} ignoré{importResult.skipped.length !== 1 ? 's' : ''} (doublons)</p>
+              <p className="text-xs font-semibold text-amber-600 flex items-center gap-1"><AlertTriangle size={12} /> {importResult.skipped.length} ignoré{importResult.skipped.length !== 1 ? 's' : ''} (doublons probables)</p>
               {importResult.skipped.map((r, i) => (
                 <p key={i} className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-0.5">Ligne {r.line} — {r.name} : {r.reason}</p>
               ))}
