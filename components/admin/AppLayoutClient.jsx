@@ -6,13 +6,14 @@ import TopbarClient from './TopbarClient'
 
 export default function AppLayoutClient({ children, logoutAction, userName }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
     <div className="flex h-screen bg-slate-50">
 
       {/* Sidebar desktop */}
       <div className="hidden md:flex h-screen shrink-0">
-        <SidebarClient logoutAction={logoutAction} userName={userName} />
+        <SidebarClient logoutAction={logoutAction} userName={userName} collapsed={collapsed} onToggle={() => setCollapsed(v => !v)} />
       </div>
 
       {/* Sheet mobile */}

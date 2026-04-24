@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, memo, useId } from 'react'
 import {
   Plus, Pencil, Trash2, X, Check, ImageIcon, MapPin, Map,
   Upload, Download, CheckCircle2 as CheckCircle, AlertTriangle,
@@ -22,8 +22,11 @@ import geoData from '@/data/benin-geo.json'
 
 const SEL = 'h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors w-full disabled:opacity-50'
 const INP = 'h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors w-full'
+const SEL_CSV = 'h-7 rounded border border-slate-200 bg-white px-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 w-full min-w-[120px] disabled:opacity-40'
+const INP_CSV = 'h-7 rounded border border-slate-200 bg-white px-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 w-full min-w-[80px]'
 
 function GeoSelect({ defaultValue }) {
+  const uid     = useId()
   const allDepts = Object.keys(geoData).sort()
   const [dept, setDept]         = useState(defaultValue?.department ?? '')
   const [city, setCity]         = useState(defaultValue?.city ?? '')
@@ -50,10 +53,19 @@ function GeoSelect({ defaultValue }) {
       </div>
       <div className="flex flex-col gap-0.5">
         <label className="text-xs font-medium text-slate-600">Quartier</label>
-        <select name="quartier" value={quartier} onChange={e => setQuartier(e.target.value)} disabled={!city} className={SEL}>
-          <option value="">— Choisir —</option>
-          {quartiers.map(q => <option key={q} value={q}>{q}</option>)}
-        </select>
+        <input
+          name="quartier"
+          list={`${uid}-q`}
+          value={quartier}
+          onChange={e => setQuartier(e.target.value)}
+          disabled={!city}
+          placeholder={city ? 'Rechercher…' : '—'}
+          autoComplete="off"
+          className={SEL}
+        />
+        <datalist id={`${uid}-q`}>
+          {quartiers.map(q => <option key={q} value={q} />)}
+        </datalist>
       </div>
     </div>
   )
@@ -197,6 +209,62 @@ function MarchandEditModal({ item, updateAction, onClose }) {
   )
 }
 
+// ─── Editable CSV preview row ─────────────────────────────────────────────────
+
+const EditableCsvRow = memo(function EditableCsvRow({ row, headers, index, onChange }) {
+  const dept     = row.department ?? ''
+  const city     = row.city ?? ''
+  const quartier = row.quartier ?? ''
+  const cities    = dept ? Object.keys(geoData[dept] ?? {}).sort() : []
+  const quartiers = dept && city ? (geoData[dept]?.[city] ?? []) : []
+
+  function upd(patch) { onChange(index, { ...row, ...patch }) }
+
+  return (
+    <tr className="border-t border-slate-100 hover:bg-emerald-50/30">
+      {headers.map(h => {
+        if (h === 'department') return (
+          <td key={h} className="px-1.5 py-1">
+            <select value={dept} onChange={e => upd({ department: e.target.value, city: '', quartier: '' })} className={SEL_CSV}>
+              <option value="">—</option>
+              {Object.keys(geoData).sort().map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </td>
+        )
+        if (h === 'city') return (
+          <td key={h} className="px-1.5 py-1">
+            <select value={city} disabled={!dept} onChange={e => upd({ city: e.target.value, quartier: '' })} className={SEL_CSV}>
+              <option value="">—</option>
+              {cities.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </td>
+        )
+        if (h === 'quartier') return (
+          <td key={h} className="px-1.5 py-1">
+            <input
+              list={`q-${index}`}
+              value={quartier}
+              disabled={!city}
+              onChange={e => upd({ quartier: e.target.value })}
+              placeholder={city ? 'Rechercher…' : '—'}
+              autoComplete="off"
+              className={SEL_CSV}
+            />
+            <datalist id={`q-${index}`}>
+              {quartiers.map(q => <option key={q} value={q} />)}
+            </datalist>
+          </td>
+        )
+        return (
+          <td key={h} className="px-1.5 py-1">
+            <input value={row[h] ?? ''} onChange={e => upd({ [h]: e.target.value })} className={INP_CSV} />
+          </td>
+        )
+      })}
+    </tr>
+  )
+})
+
 // ─── CSV helpers ──────────────────────────────────────────────────────────────
 
 // Maps alternate column names from user files to internal field names
@@ -265,10 +333,11 @@ export default function MarchandTable({ title, items, createAction, updateAction
   const [adding, setAdding]             = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const csvInputRef               = useRef(null)
-  const [csvRows, setCsvRows]     = useState(null)
-  const [csvError, setCsvError]   = useState(null)
-  const [importing, setImporting] = useState(false)
+  const csvInputRef                   = useRef(null)
+  const [csvRows, setCsvRows]         = useState(null)
+  const [csvHeaders, setCsvHeaders]   = useState(null)
+  const [csvError, setCsvError]       = useState(null)
+  const [importing, setImporting]     = useState(false)
   const [importResult, setImportResult] = useState(null)
 
   const [page, setPage]                       = useState(1)
@@ -338,14 +407,28 @@ export default function MarchandTable({ title, items, createAction, updateAction
     a.href = url; a.download = 'modele-marchands.csv'; a.click()
     URL.revokeObjectURL(url)
   }
+  const updateCsvRow = useCallback((index, updatedRow) => {
+    setCsvRows(prev => prev.map((r, i) => i === index ? updatedRow : r))
+  }, [])
+
   async function handleCsvFile(e) {
     const file = e.target.files?.[0]
     if (!file) return
     const text = await file.text()
-    const { rows, error } = parseCsv(text)
+    const parsed = parseCsv(text)
     e.target.value = ''
-    if (error) { setCsvError(error); setCsvRows(null); return }
-    setCsvError(null); setCsvRows(rows); setImportResult(null)
+    if (parsed.error) { setCsvError(parsed.error); setCsvRows(null); setCsvHeaders(null); return }
+
+    let { rows, headers } = parsed
+    const GEO = ['department', 'city', 'quartier']
+    const missing = GEO.filter(f => !headers.includes(f))
+    if (missing.length > 0) {
+      const insertAt = headers.includes('country') ? headers.indexOf('country') + 1 : headers.length
+      headers = [...headers.slice(0, insertAt), ...missing, ...headers.slice(insertAt)]
+      rows = rows.map(row => ({ ...row, ...Object.fromEntries(missing.map(f => [f, row[f] ?? ''])) }))
+    }
+
+    setCsvError(null); setCsvRows(rows); setCsvHeaders(headers); setImportResult(null)
   }
   async function handleImport() {
     if (!csvRows || !importAction) return
@@ -405,36 +488,31 @@ export default function MarchandTable({ title, items, createAction, updateAction
       )}
 
       {/* ── CSV preview ── */}
-      {csvRows && !importResult && (
+      {csvRows && csvHeaders && !importResult && (
         <div className="flex flex-col gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-emerald-800">
               <CheckCircle size={15} className="inline mr-1.5" />
-              {csvRows.length} ligne{csvRows.length !== 1 ? 's' : ''} détectée{csvRows.length !== 1 ? 's' : ''}
+              {csvRows.length} ligne{csvRows.length !== 1 ? 's' : ''} détectée{csvRows.length !== 1 ? 's' : ''} — modifiable avant import
             </p>
-            <button onClick={() => setCsvRows(null)} className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><X size={14} /></button>
+            <button onClick={() => { setCsvRows(null); setCsvHeaders(null) }} className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><X size={14} /></button>
           </div>
-          <div className="overflow-x-auto rounded-lg border border-emerald-200">
+          <div className="overflow-x-auto overflow-y-auto max-h-[420px] rounded-lg border border-emerald-200">
             <table className="text-xs w-full bg-white">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="bg-emerald-100 text-emerald-700">
-                  {Object.keys(csvRows[0]).map(h => <th key={h} className="px-3 py-1.5 text-left font-semibold whitespace-nowrap">{h}</th>)}
+                  {csvHeaders.filter(h => h !== 'lat' && h !== 'lng').map(h => <th key={h} className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">{h}</th>)}
                 </tr>
               </thead>
               <tbody>
-                {csvRows.slice(0, 5).map((row, i) => (
-                  <tr key={i} className="border-t border-slate-100">
-                    {Object.values(row).map((v, j) => (
-                      <td key={j} className="px-3 py-1.5 text-slate-600 whitespace-nowrap max-w-[160px] truncate">{v || <span className="text-slate-300">—</span>}</td>
-                    ))}
-                  </tr>
+                {csvRows.map((row, i) => (
+                  <EditableCsvRow key={i} row={row} headers={csvHeaders.filter(h => h !== 'lat' && h !== 'lng')} index={i} onChange={updateCsvRow} />
                 ))}
               </tbody>
             </table>
           </div>
-          {csvRows.length > 5 && <p className="text-xs text-slate-400">… et {csvRows.length - 5} autres lignes</p>}
           <div className="flex gap-2 justify-end">
-            <Button variant="ghost" size="sm" onClick={() => setCsvRows(null)} className="cursor-pointer"><X size={13} /> Annuler</Button>
+            <Button variant="ghost" size="sm" onClick={() => { setCsvRows(null); setCsvHeaders(null) }} className="cursor-pointer"><X size={13} /> Annuler</Button>
             <button onClick={handleImport} disabled={importing} className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white border-none cursor-pointer transition-colors">
               {importing ? 'Import en cours…' : <><Upload size={13} /> Importer {csvRows.length} ligne{csvRows.length !== 1 ? 's' : ''}</>}
             </button>
