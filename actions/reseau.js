@@ -188,17 +188,21 @@ export async function importMarchandsAction(rows) {
   if (!Array.isArray(rows) || rows.length === 0) return { error: 'Aucune donnée à importer.' }
 
   const [existing, count] = await Promise.all([
-    prisma.marchand.findMany({ select: { name: true, phone: true, email: true, city: true, quartier: true } }),
+    prisma.marchand.findMany({ select: { name: true, phone: true, email: true, department: true, city: true, quartier: true } }),
     prisma.marchand.count(),
   ])
-  const existingNames    = new Set(existing.map(m => m.name.trim().toLowerCase()))
-  const existingByPhone  = new Map(existing.filter(m => m.phone).map(m => [m.phone.trim(), m]))
-  const existingByEmail  = new Map(existing.filter(m => m.email).map(m => [m.email.trim().toLowerCase(), m]))
+
+  function norm(s) {
+    return (s ?? '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  }
+  function rowKey(r) {
+    return [norm(r.name), r.phone?.trim() ?? '', norm(r.email), norm(r.department), norm(r.city), norm(r.quartier)].join('||')
+  }
+  const existingKeys = new Map(existing.map(m => [rowKey(m), m.name.trim()]))
 
   let order = count
   const added = [], skipped = [], errors = [], warnings = []
-  const batchPhones = new Map() // phone -> name (déjà vu dans ce fichier)
-  const batchEmails = new Map() // email -> name
+  const batchKeys = new Map() // key -> name (déjà vu dans ce fichier)
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
@@ -207,11 +211,6 @@ export async function importMarchandsAction(rows) {
     const missingFields = ['name', 'phone', 'email', 'country', 'quartier'].filter(f => !row[f]?.trim())
     if (missingFields.length > 0) {
       errors.push({ line, name: row.name?.trim() || '(vide)', reason: `Champs obligatoires manquants : ${missingFields.join(', ')}` })
-      continue
-    }
-    const normalizedName = row.name.trim().toLowerCase()
-    if (existingNames.has(normalizedName)) {
-      skipped.push({ line, name: row.name.trim(), reason: 'Doublon — marchand déjà enregistré.' })
       continue
     }
     if (row.lat && isNaN(parseFloat(row.lat))) {
@@ -223,28 +222,14 @@ export async function importMarchandsAction(rows) {
       continue
     }
 
-    // ── Détection doublon probable ──────────────────────────────────────────
-    const rPhone = row.phone?.trim()
-    const rEmail = row.email?.trim().toLowerCase()
-    const rCity  = row.city?.trim().toLowerCase()
-    const rQuart = row.quartier?.trim().toLowerCase()
-
-    if (rPhone && batchPhones.has(rPhone)) {
-      warnings.push({ line, name: row.name.trim(), reason: `Même téléphone que "${batchPhones.get(rPhone)}" dans ce fichier` })
-    } else if (rEmail && batchEmails.has(rEmail)) {
-      warnings.push({ line, name: row.name.trim(), reason: `Même email que "${batchEmails.get(rEmail)}" dans ce fichier` })
-    } else {
-      const dbMatch = (rPhone && existingByPhone.get(rPhone)) || (rEmail && existingByEmail.get(rEmail))
-      if (dbMatch) {
-        const sameLocation = (rCity && dbMatch.city?.toLowerCase() === rCity) || (rQuart && dbMatch.quartier?.toLowerCase() === rQuart)
-        if (sameLocation) {
-          const field = rPhone && existingByPhone.has(rPhone) ? 'téléphone' : 'email'
-          warnings.push({ line, name: row.name.trim(), reason: `Similaire à "${dbMatch.name}" en base (même ${field} et localisation)` })
-        }
-      }
+    // ── Détection doublon probable (toutes les 6 colonnes identiques) ───────
+    const key = rowKey(row)
+    if (existingKeys.has(key)) {
+      warnings.push({ line, name: row.name.trim(), reason: `Identique à "${existingKeys.get(key)}" déjà en base (même nom, téléphone, email, localisation)` })
+    } else if (batchKeys.has(key)) {
+      warnings.push({ line, name: row.name.trim(), reason: `Identique à "${batchKeys.get(key)}" dans ce fichier (même nom, téléphone, email, localisation)` })
     }
-    if (rPhone) batchPhones.set(rPhone, row.name.trim())
-    if (rEmail) batchEmails.set(rEmail, row.name.trim())
+    batchKeys.set(key, row.name.trim())
     // ───────────────────────────────────────────────────────────────────────
 
     try {
@@ -257,7 +242,7 @@ export async function importMarchandsAction(rows) {
           active: false, order: order++,
         },
       })
-      existingNames.add(normalizedName)
+      existingKeys.set(rowKey(row), row.name.trim())
       added.push({ line, name: row.name.trim() })
     } catch (e) {
       errors.push({ line, name: row.name.trim(), reason: `Erreur base de données : ${e?.message ?? 'inconnue'}` })

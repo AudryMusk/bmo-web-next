@@ -299,7 +299,7 @@ function parseCsv(text) {
 
 function TH({ children, className = '' }) {
   return (
-    <th className={`px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap ${className}`}>
+    <th className={`px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-300 whitespace-nowrap ${className}`}>
       {children}
     </th>
   )
@@ -307,24 +307,22 @@ function TH({ children, className = '' }) {
 
 // ─── Duplicate detection ──────────────────────────────────────────────────────
 
+function norm(s) {
+  return (s ?? '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+function itemKey(item) {
+  return [norm(item.name), item.phone?.trim() ?? '', norm(item.email), norm(item.department), norm(item.city), norm(item.quartier)].join('||')
+}
+
 function detectDuplicates(items) {
-  const byPhone = {}, byEmail = {}
+  const byKey = {}
   for (const item of items) {
-    const p = item.phone?.trim()
-    const e = item.email?.trim().toLowerCase()
-    if (p) { byPhone[p] = byPhone[p] || []; byPhone[p].push(item) }
-    if (e) { byEmail[e] = byEmail[e] || []; byEmail[e].push(item) }
+    const k = itemKey(item)
+    byKey[k] = byKey[k] || []
+    byKey[k].push(item)
   }
-  const seen = new Set()
-  const groups = []
-  for (const group of [...Object.values(byPhone), ...Object.values(byEmail)]) {
-    if (group.length < 2) continue
-    const key = group.map(i => i.id).sort().join('|')
-    if (seen.has(key)) continue
-    seen.add(key)
-    groups.push(group)
-  }
-  return groups
+  return Object.values(byKey).filter(g => g.length > 1)
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -438,7 +436,13 @@ export default function MarchandTable({ title, items, createAction, updateAction
   async function handleCsvFile(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    const text = await file.text()
+    // Essai UTF-8 d'abord ; si des caractères de remplacement (U+FFFD) apparaissent,
+    // le fichier est probablement Windows-1252 (export Excel Windows)
+    let text = await file.text()
+    if (text.includes('�')) {
+      const buf = await file.arrayBuffer()
+      text = new TextDecoder('windows-1252').decode(buf)
+    }
     const parsed = parseCsv(text)
     e.target.value = ''
     if (parsed.error) { setCsvError(parsed.error); setCsvRows(null); setCsvHeaders(null); return }
@@ -706,7 +710,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
       {/* ── Table ── */}
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full min-w-[860px] text-sm border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-slate-800 border-b border-slate-700">
             <tr>
               {bulkActiveAction && (
                 <th className="pl-4 pr-2 py-2.5 w-8">
@@ -714,7 +718,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
                     type="checkbox"
                     checked={pageItems.length > 0 && pageItems.every(i => selectedIds.has(i.id))}
                     onChange={toggleAll}
-                    className="w-3.5 h-3.5 cursor-pointer accent-primary"
+                    className="w-3.5 h-3.5 cursor-pointer accent-white"
                   />
                 </th>
               )}
