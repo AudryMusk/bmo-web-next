@@ -15,44 +15,43 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
-  const lat = parseFloat(searchParams.get('latitude') ?? '')
-  const lng = parseFloat(searchParams.get('longitude') ?? '')
-  const limit = parseInt(searchParams.get('limit') ?? '20')
+  const lat    = parseFloat(searchParams.get('latitude')  ?? '')
+  const lng    = parseFloat(searchParams.get('longitude') ?? '')
+  const limit  = parseInt(searchParams.get('limit')  ?? '20')
   const radius = parseFloat(searchParams.get('radius') ?? '')
 
-  const marchands = await prisma.marchand.findMany({
-    where: { active: true },
-    select: {
-      name: true,
-      phone: true,
-      email: true,
-      city: true,
-      quartier: true,
-      department: true,
-      country: true,
-      lat: true,
-      lng: true,
-      address: true,
-      photo: true,
-      logo: true,
-    },
-  })
-
-  const withDistance = marchands
-    .map(m => ({
-      ...m,
-      distance:
-        !isNaN(lat) && !isNaN(lng) && m.lat && m.lng
-          ? haversineKm(lat, lng, m.lat, m.lng)
-          : null,
-    }))
-    .filter(m => isNaN(radius) || m.distance === null || m.distance <= radius)
-    .sort((a, b) => {
-      if (a.distance === null) return 1
-      if (b.distance === null) return -1
-      return a.distance - b.distance
+  try {
+    const marchands = await prisma.marchand.findMany({
+      where: { active: true },
+      select: {
+        name: true, phone: true, email: true,
+        city: true, quartier: true, department: true, country: true,
+        lat: true, lng: true, address: true, photo: true, logo: true,
+      },
     })
-    .slice(0, limit)
 
-  return NextResponse.json({ stores: withDistance })
+    const withDistance = marchands
+      .map(m => ({
+        ...m,
+        distance:
+          !isNaN(lat) && !isNaN(lng) && m.lat && m.lng
+            ? haversineKm(lat, lng, m.lat, m.lng)
+            : null,
+      }))
+      .filter(m => isNaN(radius) || m.distance === null || m.distance <= radius)
+      .sort((a, b) => {
+        if (a.distance === null) return 1
+        if (b.distance === null) return -1
+        return a.distance - b.distance
+      })
+      .slice(0, limit)
+
+    return NextResponse.json({ stores: withDistance })
+  } catch (err) {
+    console.error('[api/marchands]', err)
+    return NextResponse.json(
+      { error: 'Erreur serveur', detail: err instanceof Error ? err.message : String(err) },
+      { status: 500 }
+    )
+  }
 }

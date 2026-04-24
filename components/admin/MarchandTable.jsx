@@ -328,6 +328,19 @@ function detectDuplicates(items) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const CSV_FIELDS = ['name', 'phone', 'email', 'country', 'department', 'city', 'quartier', 'lat', 'lng']
+
+const EXPORT_COLS = [
+  { key: 'name',             label: 'Nom' },
+  { key: 'phone',            label: 'Téléphone' },
+  { key: 'email',            label: 'Email' },
+  { key: 'country',          label: 'Pays' },
+  { key: 'department',       label: 'Département' },
+  { key: 'city',             label: 'Ville' },
+  { key: 'quartier',         label: 'Quartier' },
+  { key: 'lat',              label: 'Latitude' },
+  { key: 'lng',              label: 'Longitude' },
+  { key: 'lien_inscription', label: "Lien d'inscription" },
+]
 const COL_COUNT  = 10  // checkbox + 8 data cols + actions
 const PAGE_SIZE  = 25
 
@@ -363,6 +376,7 @@ export default function MarchandTable({ title, items, createAction, updateAction
   const [page, setPage]                       = useState(1)
   const [showDuplicates, setShowDuplicates]   = useState(false)
   const [showExportPreview, setShowExportPreview] = useState(false)
+  const [exportCols, setExportCols]           = useState(new Set(['name', 'phone', 'lien_inscription']))
   const [selectedIds, setSelectedIds]         = useState(new Set())
   const [bulkLoading, setBulkLoading]         = useState(false)
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
@@ -410,14 +424,20 @@ export default function MarchandTable({ title, items, createAction, updateAction
     setBulkLoading(false)
   }
   function exportCsv() {
-    const header = CSV_FIELDS.join(';')
+    const origin = window.location.origin
+    const cols = EXPORT_COLS.filter(c => exportCols.has(c.key))
+    const header = cols.map(c => c.label).join(';')
+    function esc(v) { return v.includes(';') || v.includes('"') || v.includes('\n') ? `"${v.replace(/"/g, '""')}"` : v }
     const rowLines = items.map(item =>
-      CSV_FIELDS.map(f => {
-        const v = String(item[f] ?? '')
-        return v.includes(';') || v.includes('"') || v.includes('\n') ? `"${v.replace(/"/g, '""')}"` : v
+      cols.map(({ key }) => {
+        const v = key === 'lien_inscription'
+          ? (item.token ? `${origin}${shareLinkBase}/${item.token}` : '')
+          : String(item[key] ?? '')
+        return esc(v)
       }).join(';')
     )
-    const blob = new Blob([header + '\n' + rowLines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    // BOM UTF-8 pour ouverture correcte des accents dans Excel
+    const blob = new Blob(['﻿' + header + '\n' + rowLines.join('\n')], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'marchands.csv'; a.click()
     URL.revokeObjectURL(url)
@@ -574,8 +594,11 @@ export default function MarchandTable({ title, items, createAction, updateAction
       {showExportPreview && (() => {
         const dupGroups = detectDuplicates(items)
         const dupItemCount = new Set(dupGroups.flat().map(i => i.id)).size
+        function toggleCol(key) {
+          setExportCols(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n })
+        }
         return (
-          <div className="flex flex-col gap-3 p-4 bg-white border border-slate-200 rounded-xl">
+          <div className="flex flex-col gap-4 p-4 bg-white border border-slate-200 rounded-xl">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                 <Download size={15} className="text-slate-500" />
@@ -589,27 +612,46 @@ export default function MarchandTable({ title, items, createAction, updateAction
               <button onClick={() => setShowExportPreview(false)} className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer"><X size={14} /></button>
             </div>
 
+            {/* Sélecteur de colonnes */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-slate-600">Colonnes à exporter</p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setExportCols(new Set(EXPORT_COLS.map(c => c.key)))} className="text-[10px] text-primary hover:underline bg-transparent border-none cursor-pointer">Tout</button>
+                  <button type="button" onClick={() => setExportCols(new Set(['name', 'phone', 'lien_inscription']))} className="text-[10px] text-slate-400 hover:underline bg-transparent border-none cursor-pointer">Réinitialiser</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {EXPORT_COLS.map(({ key, label }) => (
+                  <label key={key} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border cursor-pointer text-xs font-medium transition-colors select-none ${exportCols.has(key) ? 'border-primary/40 bg-primary/5 text-primary' : 'border-slate-200 text-slate-500 hover:border-slate-300'} ${key === 'lien_inscription' ? 'sm:col-span-1' : ''}`}>
+                    <input type="checkbox" checked={exportCols.has(key)} onChange={() => toggleCol(key)} className="w-3 h-3 accent-primary shrink-0" />
+                    {label}
+                    {key === 'lien_inscription' && <span className="ml-auto text-[9px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary">URL</span>}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {dupGroups.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p className="text-xs text-slate-500">{dupGroups.length} groupe{dupGroups.length !== 1 ? 's' : ''} avec le même téléphone ou email :</p>
+              <div className="flex flex-col gap-1.5">
+                <p className="text-xs font-semibold text-orange-600 flex items-center gap-1"><Users size={11} /> {dupGroups.length} groupe{dupGroups.length !== 1 ? 's' : ''} de doublons probables dans l'export</p>
                 {dupGroups.map((group, gi) => (
-                  <div key={gi} className="flex items-start gap-2 px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">
-                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 text-[10px] font-bold rounded-full bg-orange-200 text-orange-800 shrink-0 mt-0.5">
-                      {group.length}
-                    </span>
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-[10px] font-semibold text-orange-700">{group[0].phone || group[0].email}</span>
-                      <span className="text-[10px] text-slate-500">{group.map(i => i.name).join(' · ')}</span>
-                    </div>
+                  <div key={gi} className="flex items-start gap-2 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-lg">
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold rounded-full bg-orange-200 text-orange-800 shrink-0 mt-0.5">{group.length}</span>
+                    <span className="text-[10px] text-slate-500">{group.map(i => i.name).join(' · ')}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex gap-2 justify-end pt-1">
+            <div className="flex gap-2 justify-end pt-1 border-t border-slate-100">
               <Button variant="ghost" size="sm" onClick={() => setShowExportPreview(false)} className="cursor-pointer"><X size={13} /> Annuler</Button>
-              <button onClick={() => { exportCsv(); setShowExportPreview(false) }} className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white border-none cursor-pointer transition-colors">
-                <Download size={13} /> Télécharger le CSV
+              <button
+                onClick={() => { exportCsv(); setShowExportPreview(false) }}
+                disabled={exportCols.size === 0}
+                className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white border-none cursor-pointer transition-colors"
+              >
+                <Download size={13} /> Télécharger — {exportCols.size} colonne{exportCols.size !== 1 ? 's' : ''}
               </button>
             </div>
           </div>
