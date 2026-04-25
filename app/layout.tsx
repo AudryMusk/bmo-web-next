@@ -6,7 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import TopProgressBar from "@/components/TopProgressBar";
 import { LoadingProvider } from "@/context/LoadingContext";
 import BmoLoader from "@/components/BmoLoader";
-import "./globals.css";
+import "./globals.css"; 
 
 export const metadata: Metadata = {
   title: "B-MO | Paiement Digital au Bénin",

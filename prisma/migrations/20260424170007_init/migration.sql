@@ -129,17 +129,25 @@ CREATE TABLE `Microfinance` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Distributor` (
+CREATE TABLE `Marchand` (
     `id` VARCHAR(191) NOT NULL,
+    `token` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `location` TEXT NOT NULL,
-    `phone` VARCHAR(191) NOT NULL,
-    `logo` VARCHAR(191) NULL,
+    `phone` VARCHAR(191) NOT NULL DEFAULT '',
+    `email` VARCHAR(191) NOT NULL DEFAULT '',
+    `country` VARCHAR(191) NOT NULL DEFAULT 'Bénin',
+    `department` VARCHAR(191) NULL,
+    `city` VARCHAR(191) NULL,
+    `quartier` VARCHAR(191) NULL,
     `lat` DOUBLE NULL,
     `lng` DOUBLE NULL,
     `address` VARCHAR(191) NULL,
+    `photo` VARCHAR(191) NULL,
+    `logo` VARCHAR(191) NULL,
+    `active` BOOLEAN NOT NULL DEFAULT false,
     `order` INTEGER NOT NULL DEFAULT 0,
 
+    UNIQUE INDEX `Marchand_token_key`(`token`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -170,6 +178,20 @@ CREATE TABLE `Partner` (
     `order` INTEGER NOT NULL DEFAULT 0,
 
     UNIQUE INDEX `Partner_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ContactForm` (
+    `id` VARCHAR(191) NOT NULL,
+    `firstname` VARCHAR(191) NOT NULL,
+    `lastname` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `telephone` VARCHAR(191) NOT NULL,
+    `subject` VARCHAR(191) NOT NULL,
+    `message` TEXT NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
