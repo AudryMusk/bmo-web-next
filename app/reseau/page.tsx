@@ -15,7 +15,6 @@ import {
   CreditCard,
   Handshake,
   Store,
-  Network,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NetworkMap from "@/components/admin/NetworkMap.jsx";
@@ -168,7 +167,7 @@ export default async function Reseau() {
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {marchands.map((marchand, index) => (
+                  {marchands.slice(0, 10).map((marchand, index) => (
                     <div key={index} className="bg-muted/50 rounded-2xl p-6">
                       <div className="flex items-start gap-4">
                         {marchand.photo ? (

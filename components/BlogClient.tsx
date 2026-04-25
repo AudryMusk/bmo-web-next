@@ -227,7 +227,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                 </article>
               ))}
             </div>
-          ) : (
+          ) : (searchQuery || selectedCategory !== 'Tous') ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 mx-auto mb-6 bg-muted rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 text-muted-foreground" />
@@ -239,7 +239,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                 Essayez de modifier votre recherche ou vos filtres
               </p>
             </div>
-          )}
+          ) : null}
         </div>
       </section>
 
