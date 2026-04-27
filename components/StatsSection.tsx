@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 
 const stats = [
   { value: "500M", label: "Capital Social", suffix: " FCFA" },
-  { value: "158", label: "Agences Microfinances", suffix: "+" },
-  { value: "8", label: "Distributeurs Régionaux", suffix: "" },
+  { value: "547", label: "Agences Microfinances", suffix: "+" },
+  { value: "28", label: "Distributeurs Régionaux", suffix: "" },
   { value: "30", label: "GAB UBA", suffix: "+" },
 ];
 

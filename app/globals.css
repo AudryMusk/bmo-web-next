@@ -98,7 +98,7 @@
 }
 
 .myCustomGradient01 {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(135deg,
     hsla(35, 50%, 18%, 1) 0%,     /* Or très sombre */
     hsla(20, 55%, 22%, 1) 40%,    /* Transition bronze */
     hsla(0, 60%, 20%, 1) 70%,     /* Rouge profond */

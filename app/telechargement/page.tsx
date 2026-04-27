@@ -65,8 +65,10 @@ export default function TelechargementPage() {
                     Installez l’application B-MO sur Android et profitez d’une
                     expérience fluide au quotidien.
                   </p>
-                  <Button size="lg" className="w-full font-semibold" disabled>
-                    Télécharger sur PlayStore
+                  <Button size="lg" className="w-full font-semibold" asChild>
+                    <a href="https://play.google.com/store/search?q=bmo+bestcash" target="_blank" rel="noreferrer">
+                      Télécharger sur PlayStore
+                    </a>
                   </Button>
                 </div>
 
@@ -81,13 +83,10 @@ export default function TelechargementPage() {
                     Installez l’application B-MO sur iPhone et restez connecté à
                     vos finances.
                   </p>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full font-semibold"
-                    disabled
-                  >
-                    Télécharger sur AppStore
+                  <Button size="lg" variant="outline" className="w-full font-semibold" asChild>
+                    <a href="https://apps.apple.com/search?term=bmo+bestcash" target="_blank" rel="noreferrer">
+                      Télécharger sur AppStore
+                    </a>
                   </Button>
                 </div>
 

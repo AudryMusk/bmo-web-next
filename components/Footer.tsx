@@ -50,13 +50,18 @@ const Footer = () => {
 
             <div className="space-y-3 mb-6">
               <a
-                href="tel:+22901606087"
+                href="tel:+2290148414813"
                 className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
               >
                 <Phone className="w-4 h-4 text-primary" />
-                <span className="text-muted-foreground">
-                  +229 01 60 60 87 88
-                </span>
+                <span className="text-muted-foreground">+229 01 48 41 48 13</span>
+              </a>
+              <a
+                href="tel:+2290161844447"
+                className="flex items-center gap-3 text-sm hover:text-primary transition-colors"
+              >
+                <Phone className="w-4 h-4 text-primary" />
+                <span className="text-muted-foreground">+229 01 61 84 44 47</span>
               </a>
               <a
                 href="mailto:info@bestcash.me"

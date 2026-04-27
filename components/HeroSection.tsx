@@ -49,13 +49,13 @@ const HeroSection = () => {
             <div className="grid grid-cols-3 gap-6 mt-12 animate-fade-in-up delay-400">
               <div className="text-center lg:text-left">
                 <p className="text-2xl sm:text-3xl font-bold text-white">
-                  158+
+                  547+
                 </p>
                 <p className="text-sm text-yellow-500">Agences partenaires</p>
               </div>
               <div className="text-center lg:text-left">
-                <p className="text-2xl sm:text-3xl font-bold text-white">8</p>
-                <p className="text-sm text-yellow-500">Marchands</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">28</p>
+                <p className="text-sm text-yellow-500">Distributeurs</p>
               </div>
               <div className="text-center lg:text-left">
                 <p className="text-2xl sm:text-3xl font-bold text-white">

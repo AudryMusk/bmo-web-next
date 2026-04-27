@@ -38,12 +38,9 @@ const microfinances = [
 const partenaires = [
   "UBA",
   "BCEAO",
-  "TerraPay",
-  "ONAFRIQ",
   "Canal+",
   "SBEE",
   "CMA CGM",
-  "UNICEF",
 ];
 
 const PartnersSection = () => {

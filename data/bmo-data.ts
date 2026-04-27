@@ -10,8 +10,8 @@ export const companyInfo = {
   agreement: "B00/SSMP/00369-2022",
   ifu: "3201710041944",
   ussd: "*890#",
-  phone: "+229 0160 60 87 88",
-  altPhones: ["+229 0197840404", "+229 0196042827"],
+  phone: "+229 01 48 41 48 13",
+  altPhones: ["+229 01 61 84 44 47"],
   email: "info@bestcash.me",
   websites: ["https://www.bmo.bj", "https://www.bestcash.me"],
   address: "Fidjrossè, route des pêches, à 300 mètres après la direction GOZEM en quittant Fidjrossè fin pavé, Cotonou - Bénin",
@@ -86,22 +86,23 @@ export const servicesParticuliers = [
     id: "transfers",
     title: "Transferts",
     icon: "ArrowLeftRight",
-    description: "Envoyez de l'argent vers tous les portefeuilles Mobile Money et comptes B-MO",
+    description: "Envoyez de l'argent vers un compte B-MO ou vers les portefeuilles Mobile Money via l'application",
     features: [
-      "Vers MTN MoMo",
-      "Vers Moov Money",
-      "Vers Celtiis Cash",
       "Vers compte B-MO",
+      "Vers MTN MoMo (via app)",
+      "Vers Moov Money (via app)",
+      "Vers Celtiis Cash (via app)",
       "Transfert planifié"
     ],
     ussdSteps: [
       "Tapez *890#",
       "Sélectionnez 1 - Client",
-      "Choisissez Transferts",
-      "Sélectionnez le type de transfert",
-      "Entrez le numéro du bénéficiaire",
-      "Saisissez le montant",
-      "Validez avec votre code PIN"
+      "Choisissez Transfert B-MO",
+      "Sélectionnez Entrer le contact",
+      "Saisissez le numéro du bénéficiaire, le montant et la raison",
+      "Entrez le nom et prénom du bénéficiaire",
+      "Cliquez sur Envoyer puis Confirmer",
+      "Entrez votre code PIN"
     ],
     appSteps: [
       "Connectez-vous à l'application B-MO",
@@ -110,7 +111,8 @@ export const servicesParticuliers = [
       "Saisissez le numéro du bénéficiaire",
       "Entrez le montant, nom et prénom du bénéficiaire",
       "Choisissez la raison du transfert",
-      "Validez avec votre code PIN"
+      "Cliquez sur Récapitulatif puis Confirmer",
+      "Entrez votre code PIN"
     ]
   },
   {
@@ -234,15 +236,25 @@ export const servicesParticuliers = [
   },
   {
     id: "international",
-    title: "Transfert International",
+    title: "Transfert UEMOA",
     icon: "Globe",
-    description: "Recevez des fonds depuis Western Union, MoneyGram et autres services internationaux",
+    description: "Envoyez et recevez des fonds vers les pays de la zone UEMOA via B-MO / UBA",
     features: [
-      "Réception Western Union",
-      "Réception MoneyGram",
       "Zone UEMOA",
-      "Zone CEMAC",
-      "International (USA, Europe, Canada, Inde, UK, Émirats, Nigeria, Cameroun)"
+      "Via application B-MO",
+      "Choisissez le pays et le portefeuille de destination"
+    ],
+    appSteps: [
+      "Connectez-vous à l'application B-MO",
+      "Cliquez sur Transferts",
+      "Choisissez Wallet mobile",
+      "Cliquez sur UEMOA",
+      "Choisissez le pays et entrez le numéro du bénéficiaire",
+      "Cliquez sur Suivant puis continuez",
+      "Entrez le montant, choisissez le portefeuille de destination",
+      "Entrez le nom et prénom du bénéficiaire",
+      "Cliquez sur Récapitulatif puis confirmez",
+      "Entrez votre code PIN"
     ]
   }
 ];
@@ -476,14 +488,11 @@ export const gabUBA = {
 export const partenaires = [
   { name: "UBA", category: "Banque", description: "Africa's Global Bank - Partenaire bancaire principal" },
   { name: "BCEAO", category: "Régulateur", description: "Banque Centrale des États de l'Afrique de l'Ouest" },
-  { name: "TERRA PAY", category: "Transfert", description: "Partenaire transfert international" },
   { name: "AGL", category: "Logistique", description: "Africa Global Logistics" },
   { name: "CANAL+", category: "Médias", description: "Partenaire réabonnement TV" },
   { name: "SBEE", category: "Énergie", description: "Société Béninoise d'Énergie Électrique" },
   { name: "CMA CGM", category: "Maritime", description: "Partenaire paiement transitaires" },
-  { name: "UNICEF", category: "Institution", description: "Fonds des Nations Unies pour l'enfance" },
   { name: "MFS", category: "Fintech", description: "Mobile Financial Services" },
-  { name: "ONAFRIQ", category: "Fintech", description: "Réseau de paiement africain" },
   { name: "APSFD", category: "Association", description: "Association Professionnelle des Systèmes Financiers Décentralisés" }
 ];
 
