@@ -66,7 +66,7 @@ export default function TelechargementPage() {
                     expérience fluide au quotidien.
                   </p>
                   <Button size="lg" className="w-full font-semibold" asChild>
-                    <a href="https://play.google.com/store/search?q=bmo+bestcash" target="_blank" rel="noreferrer">
+                    <a href="https://play.google.com/store/apps/details?id=me.bestcash.app" target="_blank" rel="noreferrer">
                       Télécharger sur PlayStore
                     </a>
                   </Button>
@@ -84,7 +84,7 @@ export default function TelechargementPage() {
                     vos finances.
                   </p>
                   <Button size="lg" variant="outline" className="w-full font-semibold" asChild>
-                    <a href="https://apps.apple.com/search?term=bmo+bestcash" target="_blank" rel="noreferrer">
+                    <a href="http://bmo.bestcash.me/" target="_blank" rel="noreferrer">
                       Télécharger sur AppStore
                     </a>
                   </Button>
@@ -102,7 +102,7 @@ export default function TelechargementPage() {
                     sécurisé.
                   </p>
                   <Button asChild size="lg" className="w-full font-semibold">
-                    <Link href="https://www.bmo.bj" target="_blank" rel="noreferrer">
+                    <Link href="http://bmo.bestcash.me/" target="_blank" rel="noreferrer">
                       Ouvrir le portail web
                     </Link>
                   </Button>
