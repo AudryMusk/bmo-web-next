@@ -38,15 +38,8 @@ function QuartierCombobox({ name, value, onChange, dept, city, disabled, inputCl
   const [open, setOpen]   = useState(false)
   const [list, setList]   = useState([])
   const [saving, setSave] = useState(false)
-  const ref               = useRef(null)
 
   useEffect(() => { setList(getQuartiers(dept, city)) }, [dept, city])
-
-  useEffect(() => {
-    function onOut(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', onOut)
-    return () => document.removeEventListener('mousedown', onOut)
-  }, [])
 
   const q        = value ?? ''
   const filtered = list.filter(x => x.toLowerCase().includes(q.toLowerCase()))
@@ -74,12 +67,13 @@ function QuartierCombobox({ name, value, onChange, dept, city, disabled, inputCl
   }
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <input
         name={name}
         value={q}
         onChange={e => { onChange(e.target.value.toUpperCase()); setOpen(true) }}
         onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
         disabled={disabled}
         placeholder={disabled ? '—' : 'Rechercher…'}
         autoComplete="off"
@@ -87,16 +81,19 @@ function QuartierCombobox({ name, value, onChange, dept, city, disabled, inputCl
         style={{ textTransform: 'uppercase' }}
       />
       {showDrop && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-44 overflow-y-auto">
+        <div
+          onMouseDown={e => e.preventDefault()}
+          className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-44 overflow-y-auto"
+        >
           {filtered.map(x => (
             <button key={x} type="button"
-              onMouseDown={() => { onChange(x); setOpen(false) }}
+              onClick={() => { onChange(x); setOpen(false) }}
               className={`w-full text-left px-3 hover:bg-slate-50 transition-colors ${small ? 'py-1 text-xs' : 'py-1.5 text-sm'}`}>
               {x}
             </button>
           ))}
           {isNew && (
-            <button type="button" onMouseDown={handleAdd} disabled={saving}
+            <button type="button" onClick={handleAdd} disabled={saving}
               className={`w-full text-left px-3 text-primary font-medium hover:bg-primary/5 border-t border-slate-100 flex items-center gap-1.5 disabled:opacity-60 ${small ? 'py-1 text-xs' : 'py-1.5 text-sm'}`}>
               <Plus size={small ? 10 : 12} />
               {saving ? 'Ajout…' : `Ajouter "${q.trim()}"`}
