@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { useState, useEffect, useRef, useCallback, memo, useId } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import {
   Plus, Pencil, Trash2, X, Check, ImageIcon, MapPin, Map,
   Upload, Download, CheckCircle2 as CheckCircle, AlertTriangle,
@@ -25,15 +25,96 @@ const INP = 'h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm outlin
 const SEL_CSV = 'h-7 rounded border border-slate-200 bg-white px-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 w-full min-w-[120px] disabled:opacity-40'
 const INP_CSV = 'h-7 rounded border border-slate-200 bg-white px-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 w-full min-w-[80px]'
 
+// Extra quartiers added this session (survive until page reload)
+const sessionExtra = {}
+
+function getQuartiers(dept, city) {
+  const base  = (dept && city ? geoData[dept]?.[city] : null) ?? []
+  const extra = sessionExtra[`${dept}||${city}`] ?? []
+  return [...new Set([...base, ...extra])].sort()
+}
+
+function QuartierCombobox({ name, value, onChange, dept, city, disabled, inputClass, small }) {
+  const [open, setOpen]   = useState(false)
+  const [list, setList]   = useState([])
+  const [saving, setSave] = useState(false)
+  const ref               = useRef(null)
+
+  useEffect(() => { setList(getQuartiers(dept, city)) }, [dept, city])
+
+  useEffect(() => {
+    function onOut(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onOut)
+    return () => document.removeEventListener('mousedown', onOut)
+  }, [])
+
+  const q        = value ?? ''
+  const filtered = list.filter(x => x.toLowerCase().includes(q.toLowerCase()))
+  const isNew    = q.trim() !== '' && !list.some(x => x.toLowerCase() === q.trim().toLowerCase())
+  const showDrop = open && !disabled && (filtered.length > 0 || isNew)
+
+  async function handleAdd() {
+    const trimmed = q.trim().toUpperCase()
+    setSave(true)
+    try {
+      await fetch('/api/admin/geo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ department: dept, city, quartier: trimmed }),
+      })
+      const key = `${dept}||${city}`
+      if (!sessionExtra[key]) sessionExtra[key] = []
+      if (!sessionExtra[key].includes(trimmed)) sessionExtra[key].push(trimmed)
+      setList(getQuartiers(dept, city))
+      onChange(trimmed)
+      setOpen(false)
+    } finally {
+      setSave(false)
+    }
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <input
+        name={name}
+        value={q}
+        onChange={e => { onChange(e.target.value.toUpperCase()); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        disabled={disabled}
+        placeholder={disabled ? '—' : 'Rechercher…'}
+        autoComplete="off"
+        className={inputClass}
+        style={{ textTransform: 'uppercase' }}
+      />
+      {showDrop && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-44 overflow-y-auto">
+          {filtered.map(x => (
+            <button key={x} type="button"
+              onMouseDown={() => { onChange(x); setOpen(false) }}
+              className={`w-full text-left px-3 hover:bg-slate-50 transition-colors ${small ? 'py-1 text-xs' : 'py-1.5 text-sm'}`}>
+              {x}
+            </button>
+          ))}
+          {isNew && (
+            <button type="button" onMouseDown={handleAdd} disabled={saving}
+              className={`w-full text-left px-3 text-primary font-medium hover:bg-primary/5 border-t border-slate-100 flex items-center gap-1.5 disabled:opacity-60 ${small ? 'py-1 text-xs' : 'py-1.5 text-sm'}`}>
+              <Plus size={small ? 10 : 12} />
+              {saving ? 'Ajout…' : `Ajouter "${q.trim()}"`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function GeoSelect({ defaultValue }) {
-  const uid     = useId()
   const allDepts = Object.keys(geoData).sort()
   const [dept, setDept]         = useState(defaultValue?.department ?? '')
   const [city, setCity]         = useState(defaultValue?.city ?? '')
   const [quartier, setQuartier] = useState(defaultValue?.quartier ?? '')
 
-  const cities    = dept ? Object.keys(geoData[dept] ?? {}).sort() : []
-  const quartiers = dept && city ? (geoData[dept]?.[city] ?? []) : []
+  const cities = dept ? Object.keys(geoData[dept] ?? {}).sort() : []
 
   return (
     <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -53,19 +134,15 @@ function GeoSelect({ defaultValue }) {
       </div>
       <div className="flex flex-col gap-0.5">
         <label className="text-xs font-medium text-slate-600">Quartier</label>
-        <input
+        <QuartierCombobox
           name="quartier"
-          list={`${uid}-q`}
           value={quartier}
-          onChange={e => setQuartier(e.target.value)}
+          onChange={setQuartier}
+          dept={dept}
+          city={city}
           disabled={!city}
-          placeholder={city ? 'Rechercher…' : '—'}
-          autoComplete="off"
-          className={SEL}
+          inputClass={SEL}
         />
-        <datalist id={`${uid}-q`}>
-          {quartiers.map(q => <option key={q} value={q} />)}
-        </datalist>
       </div>
     </div>
   )
@@ -215,8 +292,7 @@ const EditableCsvRow = memo(function EditableCsvRow({ row, headers, index, onCha
   const dept     = row.department ?? ''
   const city     = row.city ?? ''
   const quartier = row.quartier ?? ''
-  const cities    = dept ? Object.keys(geoData[dept] ?? {}).sort() : []
-  const quartiers = dept && city ? (geoData[dept]?.[city] ?? []) : []
+  const cities = dept ? Object.keys(geoData[dept] ?? {}).sort() : []
 
   function upd(patch) { onChange(index, { ...row, ...patch }) }
 
@@ -241,18 +317,14 @@ const EditableCsvRow = memo(function EditableCsvRow({ row, headers, index, onCha
         )
         if (h === 'quartier') return (
           <td key={h} className="px-1.5 py-1">
-            <input
-              list={`q-${index}`}
+            <QuartierCombobox
               value={quartier}
-              disabled={!city}
-              onChange={e => upd({ quartier: e.target.value })}
-              placeholder={city ? 'Rechercher…' : '—'}
-              autoComplete="off"
-              className={SEL_CSV}
+              onChange={val => upd({ quartier: val })}
+              dept={dept}
+              city={city}
+              inputClass={SEL_CSV}
+              small
             />
-            <datalist id={`q-${index}`}>
-              {quartiers.map(q => <option key={q} value={q} />)}
-            </datalist>
           </td>
         )
         return (
