@@ -65,34 +65,34 @@ const tarifMobileMoney = [
   },
 ];
 
-const tarifInternational = [
-  {
-    destination: "Sénégal",
-    min: "1 - 20 000",
-    frais: "1 200 FCFA",
-  },
-  {
-    destination: "Sénégal",
-    min: "20 001 - 100 000",
-    frais: "1 500 - 2 000 FCFA",
-  },
-  {
-    destination: "Sénégal",
-    min: "100 001 - 500 000",
-    frais: "2 500 - 5 000 FCFA",
-  },
-  { destination: "CEMAC", min: "1 - 20 000", frais: "1 200 FCFA" },
-  {
-    destination: "CEMAC",
-    min: "20 001 - 100 000",
-    frais: "2 000 - 2 500 FCFA",
-  },
-  {
-    destination: "CEMAC",
-    min: "100 001 - 500 000",
-    frais: "3 500 - 5 000 FCFA",
-  },
-];
+// const tarifInternational = [
+//   {
+//     destination: "Sénégal",
+//     min: "1 - 20 000",
+//     frais: "1 200 FCFA",
+//   },
+//   {
+//     destination: "Sénégal",
+//     min: "20 001 - 100 000",
+//     frais: "1 500 - 2 000 FCFA",
+//   },
+//   {
+//     destination: "Sénégal",
+//     min: "100 001 - 500 000",
+//     frais: "2 500 - 5 000 FCFA",
+//   },
+//   { destination: "CEMAC", min: "1 - 20 000", frais: "1 200 FCFA" },
+//   {
+//     destination: "CEMAC",
+//     min: "20 001 - 100 000",
+//     frais: "2 000 - 2 500 FCFA",
+//   },
+//   {
+//     destination: "CEMAC",
+//     min: "100 001 - 500 000",
+//     frais: "3 500 - 5 000 FCFA",
+//   },
+// ];
 
 const PricingSection = () => {
   return (
@@ -113,7 +113,7 @@ const PricingSection = () => {
 
         {/* Pricing Tabs */}
         <Tabs defaultValue="uemoa" className="max-w-5xl mx-auto">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-secondary/50">
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-secondary/50">
             <TabsTrigger
               value="uemoa"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -126,12 +126,12 @@ const PricingSection = () => {
             >
               Mobile Money
             </TabsTrigger>
-            <TabsTrigger
+            {/* <TabsTrigger
               value="international"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               International
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="uemoa" className="animate-fade-in-up">
@@ -217,7 +217,7 @@ const PricingSection = () => {
             </p>
           </TabsContent>
 
-          <TabsContent value="international" className="animate-fade-in-up">
+          {/* <TabsContent value="international" className="animate-fade-in-up">
             <div className="glass-card rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -257,7 +257,7 @@ const PricingSection = () => {
               Également disponible vers USA, Europe, Canada, Émirats, Nigeria,
               Cameroun
             </p>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </section>

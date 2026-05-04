@@ -63,7 +63,7 @@ export default async function Tarifs() {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs defaultValue="uemoa" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-2 h-auto p-2 bg-muted/50 rounded-2xl mb-8">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 h-auto p-2 bg-muted/50 rounded-2xl mb-8">
               <TabsTrigger
                 value="uemoa"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
@@ -92,13 +92,13 @@ export default async function Tarifs() {
                 <ArrowLeftRight className="w-4 h-4 mr-2" />
                 CEMAC
               </TabsTrigger>
-              <TabsTrigger
+              {/* <TabsTrigger
                 value="international"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl py-3"
               >
                 <Globe className="w-4 h-4 mr-2" />
                 International
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
 
             {/* UEMOA */}

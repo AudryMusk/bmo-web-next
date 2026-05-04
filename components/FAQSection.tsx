@@ -56,11 +56,6 @@ const faqs = [
       "Si vous avez le même numéro pour B-MO et UBA, la liaison est automatique via l'app. Sinon, rendez-vous en agence UBA avec une pièce d'identité valide pour effectuer la liaison manuelle.",
   },
   {
-    question: "Puis-je recevoir des transferts internationaux ?",
-    answer:
-      "Oui, B-MO permet de recevoir des fonds envoyés via Western Union et MoneyGram directement sur votre compte. Les transferts sont également possibles vers le Sénégal, la zone CEMAC, et d'autres pays.",
-  },
-  {
     question: "Quels sont les frais de transaction ?",
     answer:
       "Les frais varient selon le montant et le type de transaction. Consultez notre grille tarifaire pour les détails. Les transferts vers Mobile Money commencent à partir de 200 FCFA.",
