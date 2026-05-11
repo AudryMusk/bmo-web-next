@@ -35,12 +35,10 @@ const ContactSection = () => {
                 {
                   icon: Phone,
                   label: "Téléphone",
-                  value: "+229 01 60 60 87 88",
-                  href: "tel:+2290160608788",
-                  secondary: "+229 01 61 84 44 47",
-                  secondaryHref: "tel:+2290161844447",
-                  third: "+229 01 48 41 48 13",
-                  thirdHref: "tel:+2290148414813",
+                  value: "+229 01 61 84 44 47",
+                  href: "tel:+2290161844447",
+                  secondary: "+229 01 48 41 48 13",
+                  secondaryHref: "tel:+2290148414813",
                 },
                 {
                   icon: Mail,
@@ -106,22 +104,6 @@ const ContactSection = () => {
                       ) : (
                         <p className="text-foreground font-medium">
                           {contact.secondary}
-                        </p>
-                      )
-                    )}
-                    {"third" in contact && contact.third && (
-                      "thirdHref" in contact && contact.thirdHref ? (
-                        <Link
-                          href={contact.thirdHref}
-                          className="text-foreground font-medium hover:text-primary transition-colors block"
-                          target={contact.thirdHref.startsWith("http") ? "_blank" : undefined}
-                          rel={contact.thirdHref.startsWith("http") ? "noreferrer" : undefined}
-                        >
-                          {contact.third}
-                        </Link>
-                      ) : (
-                        <p className="text-foreground font-medium">
-                          {contact.third}
                         </p>
                       )
                     )}
